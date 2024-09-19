@@ -1,6 +1,7 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+import requests
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 app = Flask(__name__)
@@ -19,11 +20,44 @@ class Locations(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     city = db.Column(db.String(100), nullable=False)
     temperature = db.Column(db.Float, nullable=False)
-    weather_description = db.column(db.String(200), nullable=False)
+    weather_description = db.Column(db.String(200), nullable=False)
+    time = db.Column(db.DateTime, default = datetime.now(timezone.utc))
+
+def get_weather(location):
+    params = {
+        'q': location,
+        'appid': API_KEY,
+        'units': 'metric'
+    }
+    response = requests.get(API_URL, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        # save data to the database
+        new_location = Locations(
+                city = data['name'],
+                temperature = data['main']['temp'],
+                weather_description = data['weather'][0]['description']
+        )
+        db.session.add(new_location)
+        db.session.commit()
+        return data
+
+    else:
+        return None
+
 
 @app.route('/')
 def index():
-    return render_template("index.html")
+    if request.method == 'POST':
+        #get_weather function runs with the city that is entered in form
+        location = request.form['locationName']
+        get_weather(location)
+
+    #query all locations to display on page 
+    locations = Locations.query.all()
+    return render_template("index.html", locations=locations)
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
