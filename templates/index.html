@@ -1,8 +1,21 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-<form class="locationForm">
+<form action="" class="locationForm">
     <input name="location" class="locationName" placeholder="search location">
     <button class="btn btn-secondary">Search</button>
 </form>
+
+{% if locations %}
+    {% for location in locations %}
+        <ol>
+            <li>{{ location.city }}</li>
+            <li>{{ location.temperature }}</li>
+            <li>{{ location.weather_description }}</li>
+            <li>{{ location.time }}</li>
+        </ol>
+    {% endfor %}
+{% else %}
+        <p>No Locations to Display</p>
+{% endif %}
 {% endblock %}
