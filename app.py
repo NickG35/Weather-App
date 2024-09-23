@@ -57,6 +57,11 @@ def index():
     locations = Location.query.all()
     return render_template("index.html", locations=locations)
 
+@app.route('/<location_name>')
+def location_page(location_name):
+    location = Location.query.filter_by(city=location_name).all()
+    return render_template("location.html", location=location)
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
