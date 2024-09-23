@@ -9,6 +9,7 @@
             <li>{{ loc.temperature }}</li>
             <li>{{ loc.weather_description }}</li>
             <li>{{ loc.time }}</li>
+            <img src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
         </ol>
     {% endfor %}
 {% else %}
