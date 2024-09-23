@@ -9,7 +9,7 @@
 {% if locations %}
     {% for location in locations %}
         <ol>
-            <li>{{ location.city }}</li>
+            <li><a href="{{ url_for('location_page', location_name=location.city, _external=True) }}"></a>{{ location.city }}</li>
             <li>{{ location.temperature }}</li>
             <li>{{ location.weather_description }}</li>
             <li>{{ location.time }}</li>
