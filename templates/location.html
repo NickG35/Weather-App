@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+{% if location %}
+    {% for loc in location %}
+        <ol>
+            <li>{{ loc.city }}</li>
+            <li>{{ loc.temperature }}</li>
+            <li>{{ loc.weather_description }}</li>
+            <li>{{ loc.time }}</li>
+        </ol>
+    {% endfor %}
+{% else %}
+        <p>No Locations to Display</p>
+{% endif %}
+{% endblock %}
