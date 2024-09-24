@@ -119,8 +119,10 @@ def index():
 
 @app.route('/<location_name>')
 def location_page(location_name):
+    get_forecast(location_name)
     location = Location.query.filter_by(city=location_name).all()
-    return render_template("location.html", location=location)
+    forecast = Forecast.query.filter_by(city=location_name).all()
+    return render_template("location.html", location=location, forecast=forecast)
 
 if __name__ == "__main__":
     with app.app_context():
