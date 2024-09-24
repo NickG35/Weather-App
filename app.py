@@ -74,22 +74,33 @@ def get_location(city):
     return None
     
 def get_forecast(location):
-    params = {
-        'q': location,
-        'appid': API_KEY,
-        'units': 'metric',
-        'cnt': '7'
-    }
-    response = requests.get(API_URL, params=params)
-    if response.status_code == 200:
-        data = response.json()
-        # save data to the database
-        new_forecast = Forecast(
-                city = data['name'],
-        )
-        db.session.add(new_forecast)
-        db.session.commit()
-        return data
+    lat, lon = get_location(location)
+    if lat and lon:
+        params = {
+            'lat': lat,
+            'lon': lon,
+            'appid': API_KEY,
+            'units': 'metric',
+            'exclude': 'current,minutely,hourly,alerts'
+        }
+        response = requests.get(API7_URL, params=params)
+        if response.status_code == 200:
+            data = response.json()
+
+            # save first 7 days' data to the database
+            for day in data['daily'][:7]:
+                new_forecast = Forecast(
+                        city = location,
+                        forecast_day = day['dt'],
+                        forecast_symbol = day['weather'][0]['icon'],
+                        forecast_name = day['weather'][0]['description'],
+                        forecast_tempmax = day['temp']['max'],
+                        forecast_tempmin = day['temp']['max']
+                )
+                db.session.add(new_forecast)
+
+            db.session.commit()
+            return data
 
     else:
         return None
