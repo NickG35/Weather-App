@@ -16,7 +16,8 @@ migrate = Migrate(app, db)
 #API endpoint and key
 API_KEY = 'c24adc3699d398ec4a13585f3590d00e'
 API_URL = 'http://api.openweathermap.org/data/2.5/weather'
-API7_URL = "http://api.openweathermap.org/data/2.5/forecast/daily"
+API7_URL = "http://api.openweathermap.org/data/3.0/onecall"
+GEO_URL = "http://api.openweathermap.org/geo/1.0/direct"
 
 #create models for db
 class Location(db.Model):
@@ -58,8 +59,21 @@ def get_weather(location):
 
     else:
         return None
+
+def get_location(city):
+    params = {
+        'q': city,
+        'appid': API_KEY,
+        'limit': 1
+    }
+    response = requests.get(GEO_URL, params=params)
+    if response.status_code ==200:
+        data=response.json()
+        if len(data) > 0:
+            return data[0]['lat'], data[0]['lon']
+    return None
     
- def get_forecast(location):
+def get_forecast(location):
     params = {
         'q': location,
         'appid': API_KEY,
