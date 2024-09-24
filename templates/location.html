@@ -2,6 +2,7 @@
 
 {% block body %}
 
+<h1>Weather Today</h1>
 {% if location %}
     {% for loc in location %}
         <ol>
@@ -13,6 +14,22 @@
         </ol>
     {% endfor %}
 {% else %}
-        <p>No Locations to Display</p>
+        <p>No Information to Display</p>
+{% endif %}
+
+<h1>7-Day Forecast</h1>
+{% if forecast %}
+    {% for fore in forecast %}
+        <ol>
+            <li>{{ fore.city }}</li>
+            <li>{{ fore.forecast_day }}</li>
+            <img src="https://openweathermap.org/img/wn/{{ forecast.icon }}@2x.png" alt="Weather Icon">
+            <li>{{ fore.forecast_name }}</li>
+            <li>{{ fore.forecast_tempmax }}</li>
+            <li>{{ fore.forecast_tempmin }}</li>
+        </ol>
+    {% endfor %}
+{% else %}
+        <p>No Forecast to Display</p>
 {% endif %}
 {% endblock %}
