@@ -24,7 +24,7 @@ GEO_URL = "http://api.openweathermap.org/geo/1.0/direct"
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     city = db.Column(db.String(100), nullable=False)
-    temperature = db.Column(db.Float, nullable=False)
+    temperature = db.Column(db.Integer, nullable=False)
     weather_description = db.Column(db.String(200), nullable=False)
     time = db.Column(db.DateTime, default = datetime.now(timezone.utc))
     icon = db.Column(db.String(5))
@@ -35,8 +35,8 @@ class Forecast(db.Model):
     forecast_day = db.Column(db.String(50), nullable=False)
     forecast_symbol = db.Column(db.String(50), nullable=False)
     forecast_name = db.Column(db.String(100), nullable=False)
-    forecast_tempmax = db.Column(db.Float, nullable=False)
-    forecast_tempmin = db.Column(db.Float, nullable=False)
+    forecast_tempmax = db.Column(db.Integer, nullable=False)
+    forecast_tempmin = db.Column(db.Integer, nullable=False)
 
 def get_weather(location):
     params = {
