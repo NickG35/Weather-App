@@ -2,7 +2,8 @@ from flask import Flask, render_template, request
 import requests
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
+import calendar
 
 
 app = Flask(__name__)
@@ -16,7 +17,7 @@ migrate = Migrate(app, db)
 #API endpoint and key
 API_KEY = 'c24adc3699d398ec4a13585f3590d00e'
 API_URL = 'http://api.openweathermap.org/data/2.5/weather'
-API7_URL = "http://api.openweathermap.org/data/3.0/onecall"
+API7_URL = 'https://api.openweathermap.org/data/3.0/onecall'
 GEO_URL = "http://api.openweathermap.org/geo/1.0/direct"
 
 #create models for db
@@ -41,7 +42,7 @@ def get_weather(location):
     params = {
         'q': location,
         'appid': API_KEY,
-        'units': 'metric'
+        'units': 'imperial'
     }
     response = requests.get(API_URL, params=params)
     if response.status_code == 200:
@@ -67,42 +68,58 @@ def get_location(city):
         'limit': 1
     }
     response = requests.get(GEO_URL, params=params)
-    if response.status_code ==200:
-        data=response.json()
-        if len(data) > 0:
-            return data[0]['lat'], data[0]['lon']
-    return None
+    if response.status_code == 200:
+        data = response.json()
+        if data:
+            lat = data[0]['lat']
+            lon = data[0]['lon']
+            return lat, lon
+        else:
+            return None
+    else:
+        print(f"Error: Failed to retrieve location data for {city}")
+        return None
     
-def get_forecast(location):
-    lat, lon = get_location(location)
-    if lat and lon:
-        params = {
-            'lat': lat,
-            'lon': lon,
-            'appid': API_KEY,
-            'units': 'metric',
-            'exclude': 'current,minutely,hourly,alerts'
-        }
-        response = requests.get(API7_URL, params=params)
-        if response.status_code == 200:
-            data = response.json()
+def get_forecast(location, lat, lon):
+    params = {
+        'lat': lat,
+        'lon': lon,
+        'units': 'imperial',
+        'exclude': 'current,minutely,hourly,alerts',
+        'appid': API_KEY
+    }
+    print(f"Requesting forecast for: {params}")
+    response = requests.get(API7_URL, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
 
-            # save first 7 days' data to the database
-            for day in data['daily'][:7]:
+        # Save first 7 days' data to the database
+        for day in data['daily'][:7]:
+            forecast_date = date.fromtimestamp(day['dt'])
+            forecast_day_name = calendar.day_name[forecast_date.weekday()]\
+            
+            existing_forecast = Forecast.query.filter_by(city=location, forecast_day=forecast_day_name)
+            if not existing_forecast:
                 new_forecast = Forecast(
-                        city = location,
-                        forecast_day = day['dt'],
-                        forecast_symbol = day['weather'][0]['icon'],
-                        forecast_name = day['weather'][0]['description'],
-                        forecast_tempmax = day['temp']['max'],
-                        forecast_tempmin = day['temp']['max']
+                    city=location,
+                    forecast_day=forecast_day_name,
+                    forecast_symbol=day['weather'][0]['icon'],
+                    forecast_name=day['weather'][0]['description'],
+                    forecast_tempmax=day['temp']['max'],
+                    forecast_tempmin=day['temp']['min']
                 )
                 db.session.add(new_forecast)
-
-            db.session.commit()
-            return data
+                db.session.commit()
+                return data
+            else:
+                return None
 
     else:
+        print(f"Error: Unable to retrieve forecast data for {location}")
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.text}")
         return None
 
 
@@ -119,9 +136,15 @@ def index():
 
 @app.route('/<location_name>')
 def location_page(location_name):
-    get_forecast(location_name)
+    location_data = get_location(location_name)
+    if location_data:
+        lat, lon = location_data
+        get_forecast(location_name, lat, lon)
+        print(f"Latitude: {lat}, Longitude: {lon}")
+        forecast = Forecast.query.filter_by(city=location_name).all()
+    else:
+        forecast = []
     location = Location.query.filter_by(city=location_name).all()
-    forecast = Forecast.query.filter_by(city=location_name).all()
     return render_template("location.html", location=location, forecast=forecast)
 
 if __name__ == "__main__":
