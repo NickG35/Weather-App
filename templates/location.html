@@ -31,4 +31,19 @@
     {% else %}
             <p>No Forecast to Display</p>
     {% endif %}
+
+    <h1>Hourly</h1>
+    {% if hourly %}
+        {% for hour in hourly %}
+            <ol>
+                <li>{{ hour.city }} hey</li>
+                <li>{{ hour.forecast_hour }}</li>
+                <img src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
+                <li>{{ hour.hourly_name }}</li>
+                <li>{{ hour.hourly_temp }}</li>
+            </ol>
+        {% endfor %}
+    {% else %}
+            <p>No Hourly Date to Display</p>
+    {% endif %}
 {% endblock %}
