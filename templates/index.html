@@ -12,7 +12,6 @@
             <li><a href="{{ url_for('location_page', location_name=location.city) }}">{{ location.city }}</a></li>
             <li>{{ location.temperature }}</li>
             <li>{{ location.weather_description }}</li>
-            <li>{{ location.time }}</li>
             <img src="http://openweathermap.org/img/wn/{{ location.icon }}.png" alt="Weather Icon">
         </ol>
     {% endfor %}
