@@ -38,6 +38,14 @@ class Forecast(db.Model):
     forecast_tempmax = db.Column(db.Integer, nullable=False)
     forecast_tempmin = db.Column(db.Integer, nullable=False)
 
+class Hourly(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    city = db.Column(db.String(100), nullable=False)
+    hour = db.Column(db.String(50), nullable=False)
+    hourly_symbol = db.Column(db.String(50), nullable=False)
+    hourly_name = db.Column(db.String(100), nullable=False)
+    hourly_temp = db.Column(db.Integer, nullable=False)
+
 def get_weather(location):
     params = {
         'q': location,
@@ -93,7 +101,6 @@ def get_forecast(location, lat, lon):
     
     if response.status_code == 200:
         data = response.json()
-        print(data)
 
         # Save first 7 days' data to the database
         for day in data['daily'][:7]:
@@ -122,6 +129,43 @@ def get_forecast(location, lat, lon):
         print(f"Response: {response.text}")
         return None
 
+def get_hourly(location, lat, lon):
+    params = {
+        'lat': lat,
+        'lon': lon,
+        'units': 'imperial',
+        'exclude': 'current,minutely,daily,alerts',
+        'appid': API_KEY
+    }
+    print(f"Requesting hourly for: {params}")
+    response = requests.get(API7_URL, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+
+        # Save first 24 hours' data to the database
+        for hour in data['hourly'][:24]:
+            forecast_hour =datetime.fromtimestamp(hour['dt']).hour
+            
+            existing_hourly = Hourly.query.filter_by(city=location, hour=forecast_hour)
+            if not existing_hourly:
+                new_hourly = Hourly(
+                    city=location,
+                    hour=str(forecast_hour),
+                    hourly_symbol=hour['weather'][0]['icon'],
+                    hourly_name=hour['weather'][0]['description'],
+                    hourly_temp=hour['temp']
+                )
+                db.session.add(new_hourly)
+
+        db.session.commit()
+        return data
+
+    else:
+        print(f"Error: Unable to retrieve forecast data for {location}")
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.text}")
+        return None
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -140,12 +184,15 @@ def location_page(location_name):
     if location_data:
         lat, lon = location_data
         get_forecast(location_name, lat, lon)
+        get_hourly(location_name, lat, lon)
         print(f"Latitude: {lat}, Longitude: {lon}")
         forecast = Forecast.query.filter_by(city=location_name).all()
+        hourly = Hourly.query.filter_by(city=location_name).all()
     else:
         forecast = []
+        hourly = []
     location = Location.query.filter_by(city=location_name).all()
-    return render_template("location.html", location=location, forecast=forecast)
+    return render_template("location.html", location=location, forecast=forecast, hourly=hourly)
 
 if __name__ == "__main__":
     with app.app_context():
