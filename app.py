@@ -58,7 +58,7 @@ def get_weather(location):
         # save data to the database
         new_location = Location(
                 city = data['name'],
-                temperature = data['main']['temp'],
+                temperature = int(data['main']['temp']),
                 weather_description = data['weather'][0]['description'],
                 icon = data['weather'][0]['icon']
         )
@@ -114,14 +114,13 @@ def get_forecast(location, lat, lon):
                     forecast_day=forecast_day_name,
                     forecast_symbol=day['weather'][0]['icon'],
                     forecast_name=day['weather'][0]['description'],
-                    forecast_tempmax=day['temp']['max'],
-                    forecast_tempmin=day['temp']['min']
+                    forecast_tempmax=int(day['temp']['max']),
+                    forecast_tempmin=int(day['temp']['min'])
                 )
                 db.session.add(new_forecast)
-                db.session.commit()
-                return data
-            else:
-                return None
+
+        db.session.commit()
+        return data
 
     else:
         print(f"Error: Unable to retrieve forecast data for {location}")
@@ -154,11 +153,12 @@ def get_hourly(location, lat, lon):
                     hour=str(forecast_hour),
                     hourly_symbol=hour['weather'][0]['icon'],
                     hourly_name=hour['weather'][0]['description'],
-                    hourly_temp=hour['temp']
+                    hourly_temp=int(hour['temp'])
                 )
                 db.session.add(new_hourly)
 
         db.session.commit()
+        print(hour)
         return data
 
     else:
@@ -185,7 +185,6 @@ def location_page(location_name):
         lat, lon = location_data
         get_forecast(location_name, lat, lon)
         get_hourly(location_name, lat, lon)
-        print(f"Latitude: {lat}, Longitude: {lon}")
         forecast = Forecast.query.filter_by(city=location_name).all()
         hourly = Hourly.query.filter_by(city=location_name).all()
     else:
