@@ -1,4 +1,63 @@
-.test {
-    font-weight: bold;
-    color: red;
+
+
+/* General styles applied to all screens */
+.title {
+    text-align: center;
 }
+
+.weather-block {
+    border: 1px solid;
+}
+
+.forecast-row {
+    display: flex;
+    align-items: center;
+}
+  
+  /* Mobile Styles */
+  @media (max-width: 575.99px) {
+    .weather-icon {
+        width: 70px;
+    }
+
+    .weather-pic {
+        width: 70px;
+    }
+
+    .weather-block {
+        width: 100%;
+    }
+
+    .weather-desc {
+        width: 100px;
+        text-align: center;
+    }
+
+    .weather-temp {
+        padding: 10px;
+        width: 40px;
+    }
+
+    .forecast-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+    }
+
+    .day-box {
+        width: 85px;
+        padding: 10px;
+    }
+    
+  }
+  
+  /* Tablet Styles */
+  @media (min-width: 768px) and (max-width: 991.99px) {
+   
+  }
+  
+  /* Desktop Styles */
+  @media (min-width: 992px) {
+  
+  }
