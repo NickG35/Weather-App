@@ -14,17 +14,29 @@
 {% endif %}
 
 <h1 class="title">7-Day Forecast</h1>
+<div class="weather-block">
     {% if forecast %}
         {% for fore in forecast %}
-                <p>{{ fore.forecast_day }}</p>
-                <img src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
-                <p>{{ fore.forecast_name }}</p>
-                <p>{{ fore.forecast_tempmax }}</p>
-                <p>{{ fore.forecast_tempmin }}</p>
+            <div class="forecast-row">
+                <div class="day-box">
+                    <p>{{ fore.forecast_day }}</p>
+                </div>
+                <div class="weather-pic">
+                    <img class="weather-icon" src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
+                </div>
+                <div class="weather-desc">
+                    <p>{{ fore.forecast_name }}</p>
+                </div>
+                <div class="weather-temp">
+                    <p>{{ fore.forecast_tempmax }}</p>
+                    <p>{{ fore.forecast_tempmin }}</p>
+                </div>
+            </div>
         {% endfor %}
     {% else %}
             <p>No Forecast to Display</p>
     {% endif %}
+</div>
 
     <h1>Hourly</h1>
     {% if hourly %}
