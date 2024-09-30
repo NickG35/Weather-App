@@ -20,7 +20,7 @@
     {% if forecast %}
         {% for fore in forecast %}
             <ol>
-                <li>{{ fore.city }} hey</li>
+                <li>{{ fore.city }}</li>
                 <li>{{ fore.forecast_day }}</li>
                 <img src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
                 <li>{{ fore.forecast_name }}</li>
@@ -36,8 +36,8 @@
     {% if hourly %}
         {% for hour in hourly %}
             <ol>
-                <li>{{ hour.city }} hey</li>
-                <li>{{ hour.forecast_hour }}</li>
+                <li>{{ hour.city }}</li>
+                <li>{{ hour.hourly_time }}</li>
                 <img src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
                 <li>{{ hour.hourly_name }}</li>
                 <li>{{ hour.hourly_temp }}</li>
