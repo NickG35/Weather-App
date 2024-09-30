@@ -2,31 +2,25 @@
 
 {% block body %}
 
-<h1>Weather Today</h1>
+<h1 class="title">Weather Today</h1>
 {% if location %}
     {% for loc in location %}
-        <ol>
-            <li>{{ loc.city }}</li>
-            <li>{{ loc.temperature }}</li>
-            <li>{{ loc.weather_description }}</li>
+            <p>{{ loc.temperature }}</p>
+            <p>{{ loc.weather_description }}</p>
             <img src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
-        </ol>
     {% endfor %}
 {% else %}
         <p>No Information to Display</p>
 {% endif %}
 
-<h1>7-Day Forecast</h1>
+<h1 class="title">7-Day Forecast</h1>
     {% if forecast %}
         {% for fore in forecast %}
-            <ol>
-                <li>{{ fore.city }}</li>
-                <li>{{ fore.forecast_day }}</li>
+                <p>{{ fore.forecast_day }}</p>
                 <img src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
-                <li>{{ fore.forecast_name }}</li>
-                <li>{{ fore.forecast_tempmax }}</li>
-                <li>{{ fore.forecast_tempmin }}</li>
-            </ol>
+                <p>{{ fore.forecast_name }}</p>
+                <p>{{ fore.forecast_tempmax }}</p>
+                <p>{{ fore.forecast_tempmin }}</p>
         {% endfor %}
     {% else %}
             <p>No Forecast to Display</p>
@@ -35,13 +29,10 @@
     <h1>Hourly</h1>
     {% if hourly %}
         {% for hour in hourly %}
-            <ol>
-                <li>{{ hour.city }}</li>
-                <li>{{ hour.hourly_time }}</li>
+                <p>{{ hour.hourly_time }}</p>
                 <img src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
-                <li>{{ hour.hourly_name }}</li>
-                <li>{{ hour.hourly_temp }}</li>
-            </ol>
+                <p>{{ hour.hourly_name }}</p>
+                <p>{{ hour.hourly_temp }}</p>
         {% endfor %}
     {% else %}
             <p>No Hourly Date to Display</p>
