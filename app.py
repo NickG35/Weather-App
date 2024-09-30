@@ -41,7 +41,7 @@ class Forecast(db.Model):
 class Hourly(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     city = db.Column(db.String(100), nullable=False)
-    hour = db.Column(db.String(50), nullable=False)
+    hourly_time = db.Column(db.String(50), nullable=False)
     hourly_symbol = db.Column(db.String(50), nullable=False)
     hourly_name = db.Column(db.String(100), nullable=False)
     hourly_temp = db.Column(db.Integer, nullable=False)
@@ -107,7 +107,7 @@ def get_forecast(location, lat, lon):
             forecast_date = date.fromtimestamp(day['dt'])
             forecast_day_name = calendar.day_name[forecast_date.weekday()]\
             
-            existing_forecast = Forecast.query.filter_by(city=location, forecast_day=forecast_day_name)
+            existing_forecast = Forecast.query.filter_by(city=location, forecast_day=forecast_day_name).first()
             if not existing_forecast:
                 new_forecast = Forecast(
                     city=location,
@@ -118,9 +118,14 @@ def get_forecast(location, lat, lon):
                     forecast_tempmin=int(day['temp']['min'])
                 )
                 db.session.add(new_forecast)
+                print(f"Saving new forecast for {location} on {forecast_day_name}: max {day['temp']['max']}, min {day['temp']['min']}")
 
-        db.session.commit()
-        return data
+        try:
+            db.session.commit()
+            return data
+        except Exception as e:
+            print(f"Error commmitting to the database: {e}")
+            db.session.rollback()
 
     else:
         print(f"Error: Unable to retrieve forecast data for {location}")
@@ -144,22 +149,27 @@ def get_hourly(location, lat, lon):
 
         # Save first 24 hours' data to the database
         for hour in data['hourly'][:24]:
-            forecast_hour =datetime.fromtimestamp(hour['dt']).hour
+            forecast_hour = datetime.fromtimestamp(hour['dt']).strftime('%-I:%M %p')
             
-            existing_hourly = Hourly.query.filter_by(city=location, hour=forecast_hour)
+            existing_hourly = Hourly.query.filter_by(city=location, hourly_time=str(forecast_hour)).first()
             if not existing_hourly:
                 new_hourly = Hourly(
                     city=location,
-                    hour=str(forecast_hour),
+                    hourly_time=str(forecast_hour),
                     hourly_symbol=hour['weather'][0]['icon'],
                     hourly_name=hour['weather'][0]['description'],
                     hourly_temp=int(hour['temp'])
                 )
                 db.session.add(new_hourly)
+                print(f"Saving new hourly forecast for {location} at {forecast_hour}: temp {hour['temp']}")
 
-        db.session.commit()
-        print(hour)
-        return data
+        try:
+            db.session.commit()
+            return data
+        except Exception as e:
+            print(f"Error commmitting to the database: {e}")
+            db.session.rollback()
+        
 
     else:
         print(f"Error: Unable to retrieve forecast data for {location}")
@@ -187,9 +197,12 @@ def location_page(location_name):
         get_hourly(location_name, lat, lon)
         forecast = Forecast.query.filter_by(city=location_name).all()
         hourly = Hourly.query.filter_by(city=location_name).all()
+        print("Forecast from DB:", forecast)
+        print("Hourly from DB:", hourly)            
     else:
         forecast = []
         hourly = []
+
     location = Location.query.filter_by(city=location_name).all()
     return render_template("location.html", location=location, forecast=forecast, hourly=hourly)
 
