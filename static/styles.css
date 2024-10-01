@@ -17,11 +17,11 @@
   /* Mobile Styles */
   @media (max-width: 575.99px) {
     .weather-icon {
-        width: 70px;
+        width: 50px;
     }
 
     .weather-pic {
-        width: 70px;
+        width: 50px;
     }
 
     .weather-block {
@@ -49,6 +49,55 @@
         width: 85px;
         padding: 10px;
     }
+
+    .hourly-block {
+        border: 1px solid black;
+        display: flex;
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .hourly-column {
+        border: 1px solid;
+        display: flex;
+        flex-direction: column;
+        width: 80px;
+        padding: 10px;
+        text-align: center;
+        align-items: center;
+    }
+
+    .current-block {
+        display: flex;
+        justify-content: center;
+    }
+
+    .current-weather {
+        display: flex;
+        align-items: center;
+    }
+
+    .all-current {
+        text-align: center;
+    }
+
+    .big-icon {
+        width: 100px;
+        height: 100px;
+    }
+
+    .big-temp {
+        font-size: 40px;
+    }
+
+    .degree {
+        font-size: 20px;
+    }
+
+    .big-desc {
+        color: gray;
+    }
+
     
   }
   
