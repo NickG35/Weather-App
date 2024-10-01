@@ -4,14 +4,38 @@
 
 <h1 class="title">Weather Today</h1>
 {% if location %}
-    {% for loc in location %}
-            <p>{{ loc.temperature }}</p>
-            <p>{{ loc.weather_description }}</p>
-            <img src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
-    {% endfor %}
+    <div class="current-block">
+        {% for loc in location %}
+            <div class="all-current">
+                <div class="current-weather">
+                    <img class="big-icon" src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
+                    <p class="big-temp"><b>{{ loc.temperature }}</b><p class="degree">°F</p></p>
+                </div>
+                    <p class="big-desc">{{ loc.weather_description }}</p>
+            </div>
+        {% endfor %}
+    </div>
 {% else %}
         <p>No Information to Display</p>
 {% endif %}
+
+<h1 class="title">Hourly</h1>
+<!--goal for tommorow: display wind images based on wind deg-->
+<!--rain precepitation has one image but difference in percentages-->
+<img src="/static/Images/raindrop.png" class="weather-icon">
+    {% if hourly %}
+        <div class="hourly-block">
+            {% for hour in hourly %}
+                <div class="hourly-column">
+                    <p>{{ hour.hourly_time }}</p>
+                    <img class="weather-icon" src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
+                    <p>{{ hour.hourly_temp }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+            <p>No Hourly Date to Display</p>
+    {% endif %}
 
 <h1 class="title">7-Day Forecast</h1>
 <div class="weather-block">
@@ -37,16 +61,4 @@
             <p>No Forecast to Display</p>
     {% endif %}
 </div>
-
-    <h1>Hourly</h1>
-    {% if hourly %}
-        {% for hour in hourly %}
-                <p>{{ hour.hourly_time }}</p>
-                <img src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
-                <p>{{ hour.hourly_name }}</p>
-                <p>{{ hour.hourly_temp }}</p>
-        {% endfor %}
-    {% else %}
-            <p>No Hourly Date to Display</p>
-    {% endif %}
 {% endblock %}
