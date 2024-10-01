@@ -105,7 +105,7 @@ def get_forecast(location, lat, lon):
         # Save first 7 days' data to the database
         for day in data['daily'][:7]:
             forecast_date = date.fromtimestamp(day['dt'])
-            forecast_day_name = calendar.day_name[forecast_date.weekday()]\
+            forecast_day_name = calendar.day_name[forecast_date.weekday()]
             
             existing_forecast = Forecast.query.filter_by(city=location, forecast_day=forecast_day_name).first()
             if not existing_forecast:
@@ -149,7 +149,8 @@ def get_hourly(location, lat, lon):
 
         # Save first 24 hours' data to the database
         for hour in data['hourly'][:24]:
-            forecast_hour = datetime.fromtimestamp(hour['dt']).strftime('%-I:%M %p')
+            forecast_time = datetime.fromtimestamp(hour['dt']).strftime('%-I:%M %p')
+            forecast_hour = forecast_time.replace(':00', '')
             
             existing_hourly = Hourly.query.filter_by(city=location, hourly_time=str(forecast_hour)).first()
             if not existing_hourly:
