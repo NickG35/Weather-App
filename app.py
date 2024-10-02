@@ -45,6 +45,9 @@ class Hourly(db.Model):
     hourly_symbol = db.Column(db.String(50), nullable=False)
     hourly_name = db.Column(db.String(100), nullable=False)
     hourly_temp = db.Column(db.Integer, nullable=False)
+    hourly_precipitation = db.Column(db.Integer, nullable=False)
+    wind_speed = db.Column(db.Integer, nullable=False)
+    wind_deg = db.Column(db.Integer, nullable=False)
 
 def get_weather(location):
     params = {
@@ -146,11 +149,24 @@ def get_hourly(location, lat, lon):
     
     if response.status_code == 200:
         data = response.json()
+        print(data)
 
         # Save first 24 hours' data to the database
         for hour in data['hourly'][:24]:
             forecast_time = datetime.fromtimestamp(hour['dt']).strftime('%-I:%M %p')
             forecast_hour = forecast_time.replace(':00', '')
+            wind_deg = int(hour['wind_deg'])
+            # Determine the wind direction image
+            if 0 <= wind_deg < 90:
+                wind_image = 'north_arrow.png'  # Path to your north arrow image
+            elif 90 <= wind_deg < 180:
+                wind_image = 'east_arrow.png'   # Path to your east arrow image
+            elif 180 <= wind_deg < 270:
+                wind_image = 'south_arrow.png'  # Path to your south arrow image
+            elif 270 <= wind_deg < 360:
+                wind_image = 'west_arrow.png'   # Path to your west arrow image
+            else:
+                wind_image = 'default_arrow.png' # Fallback image
             
             existing_hourly = Hourly.query.filter_by(city=location, hourly_time=str(forecast_hour)).first()
             if not existing_hourly:
@@ -159,7 +175,10 @@ def get_hourly(location, lat, lon):
                     hourly_time=str(forecast_hour),
                     hourly_symbol=hour['weather'][0]['icon'],
                     hourly_name=hour['weather'][0]['description'],
-                    hourly_temp=int(hour['temp'])
+                    hourly_temp=int(hour['temp']),
+                    hourly_precipitation=hour['pop'],
+                    wind_speed=int(hour['wind_speed']),
+                    wind_deg=int(hour['wind_deg'])
                 )
                 db.session.add(new_hourly)
                 print(f"Saving new hourly forecast for {location} at {forecast_hour}: temp {hour['temp']}")
