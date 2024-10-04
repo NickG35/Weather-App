@@ -29,10 +29,10 @@
                     <p>{{ hour.hourly_time }}</p>
                     <img src="/static/Images/raindrop.png" class="weather-icon">
                     <img class="weather-icon" src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
-                    <p>{{ hour.hourly_temp }}</p>
-                    <p>{{hour.hourly_precipitation}}</p>
-                    <p>{{ hour.wind_speed }}</p>
-                    <p>{{ hour.wind_deg }}</p>
+                    <p>{{ hour.hourly_temp }} °</p>
+                    <p>{{hour.hourly_precipitation}} %</p>
+                    <p>{{ hour.wind_speed }} mph</p>
+                    <img class="weather-icon" src="{{hour.wind_symbol}}">
                 </div>
             {% endfor %}
         </div>
