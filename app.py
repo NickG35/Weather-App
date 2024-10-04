@@ -48,6 +48,7 @@ class Hourly(db.Model):
     hourly_precipitation = db.Column(db.Integer, nullable=False)
     wind_speed = db.Column(db.Integer, nullable=False)
     wind_deg = db.Column(db.Integer, nullable=False)
+    wind_symbol = db.Column(db.String(50), nullable=False)
 
 def get_weather(location):
     params = {
@@ -157,16 +158,26 @@ def get_hourly(location, lat, lon):
             forecast_hour = forecast_time.replace(':00', '')
             wind_deg = int(hour['wind_deg'])
             # Determine the wind direction image
-            if 0 <= wind_deg < 90:
+            if 0 <= wind_deg <= 22.5:
                 wind_image = 'north_arrow.png'  # Path to your north arrow image
-            elif 90 <= wind_deg < 180:
-                wind_image = 'east_arrow.png'   # Path to your east arrow image
-            elif 180 <= wind_deg < 270:
-                wind_image = 'south_arrow.png'  # Path to your south arrow image
-            elif 270 <= wind_deg < 360:
-                wind_image = 'west_arrow.png'   # Path to your west arrow image
+            elif 22.6 <= wind_deg <= 67.5:
+                wind_image = 'static/Images/northeast_arrow.png'   # Path to your east arrow image
+            elif 67.6 <= wind_deg <= 112.5:
+                wind_image = 'static/Images/east_arrow.png'  # Path to your south arrow image
+            elif 112.6 <= wind_deg <= 157.5:
+                wind_image = 'static/Images/southeast_arrow.png'   # Path to your west arrow image
+            elif 157.6 <= wind_deg < 202.5:
+                wind_image = 'static/Images/south_arrow.png' 
+            elif 202.6 <= wind_deg < 247.5:
+                wind_image = 'static/Images/southwest_arrow.png' 
+            elif 247.6 <= wind_deg < 292.5:
+                wind_image = 'static/Images/west_arrow.png' 
+            elif 292.6 <= wind_deg < 337.5:
+                wind_image = 'static/Images/northwest_arrow.png' 
+            elif 337.6 <= wind_deg < 360:
+                wind_image = 'static/Images/north_arrow.png' 
             else:
-                wind_image = 'default_arrow.png' # Fallback image
+                wind_image = 'static/Images/north_arrow.png' # Fallback image
             
             existing_hourly = Hourly.query.filter_by(city=location, hourly_time=str(forecast_hour)).first()
             if not existing_hourly:
@@ -176,9 +187,10 @@ def get_hourly(location, lat, lon):
                     hourly_symbol=hour['weather'][0]['icon'],
                     hourly_name=hour['weather'][0]['description'],
                     hourly_temp=int(hour['temp']),
-                    hourly_precipitation=hour['pop'],
+                    hourly_precipitation=int(hour['pop'] * 100),
                     wind_speed=int(hour['wind_speed']),
-                    wind_deg=int(hour['wind_deg'])
+                    wind_deg=int(hour['wind_deg']),
+                    wind_symbol=wind_image
                 )
                 db.session.add(new_hourly)
                 print(f"Saving new hourly forecast for {location} at {forecast_hour}: temp {hour['temp']}")
