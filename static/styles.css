@@ -16,7 +16,7 @@
   
   /* Mobile Styles */
   @media (max-width: 575.99px) {
-    .weather-icon {
+    #weather-icon {
         width: 50px;
     }
 
@@ -65,6 +65,7 @@
         padding: 10px;
         text-align: center;
         align-items: center;
+        font-size: 12px;
     }
 
     .current-block {
