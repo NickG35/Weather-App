@@ -70,7 +70,7 @@
 
     });
 </script>
-<h1 class="title">Weather Today</h1>
+
 {% if location %}
     <div class="current-block">
         {% for loc in location %}
@@ -87,9 +87,6 @@
         <p>No Information to Display</p>
 {% endif %}
 
-<h1 class="title">Hourly</h1>
-<!--goal for tommorow: display wind images based on wind deg-->
-<!--rain precepitation has one image but difference in percentages-->
     {% if hourly %}
         <ul class="nav nav-underline">
             <li class="nav-item">
@@ -105,7 +102,7 @@
         <div class="hourly-block">
             {% for hour in hourly %}
                 <div class="hourly-column">
-                    <p>{{ hour.hourly_time }}</p>
+                    <p><b>{{ hour.hourly_time }}</b></p>
                     <img class="rainPic" id="weather-icon" src="/static/Images/raindrop.png" id="weather-icon">
                     <img class="weatherPic" id="weather-icon" src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
                     <img class="windPic" id="weather-icon" src="{{hour.wind_symbol}}">
@@ -119,13 +116,13 @@
             <p>No Hourly Date to Display</p>
     {% endif %}
 
-<h1 class="title">7-Day Forecast</h1>
+
 <div class="weather-block">
     {% if forecast %}
         {% for fore in forecast %}
             <div class="forecast-row">
                 <div class="day-box">
-                    <p>{{ fore.forecast_day }}</p>
+                    <p><b>{{ fore.forecast_day }}</b></p>
                 </div>
                 <div class="weather-pic">
                     <img id="weather-icon" src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
@@ -134,8 +131,8 @@
                     <p>{{ fore.forecast_name }}</p>
                 </div>
                 <div class="weather-temp">
-                    <p>{{ fore.forecast_tempmax }}</p>
-                    <p>{{ fore.forecast_tempmin }}</p>
+                    <p>{{ fore.forecast_tempmax }}°</p>
+                    <p class="tempMin">{{ fore.forecast_tempmin }}°</p>
                 </div>
             </div>
         {% endfor %}
