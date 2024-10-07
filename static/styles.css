@@ -6,12 +6,14 @@
 }
 
 .weather-block {
-    border: 1px solid;
+    border-top: none;
+    border: 1px solid lightgray;
 }
 
 .forecast-row {
     display: flex;
     align-items: center;
+    border-bottom: 1px solid lightgray;
 }
   
   /* Mobile Styles */
@@ -51,21 +53,26 @@
     }
 
     .hourly-block {
-        border: 1px solid black;
+        border: 1px solid lightgray;
+        border-bottom: none;
         display: flex;
         overflow-x: auto;
         width: 100%;
     }
 
     .hourly-column {
-        border: 1px solid;
+        border-right: 1px solid lightgray;
         display: flex;
         flex-direction: column;
-        width: 80px;
+        width: 20%;
         padding: 10px;
         text-align: center;
         align-items: center;
         font-size: 12px;
+    }
+
+    .tempMin {
+        color: gray;
     }
 
     .current-block {
@@ -76,6 +83,20 @@
     .current-weather {
         display: flex;
         align-items: center;
+    }
+
+    #popLink, #windLink, #tempLink {
+        text-decoration: none;
+        color: black;
+    }
+
+    .nav-link:active {
+        color: black;
+    }
+
+    .nav-underline{
+        justify-content: center;
+        padding: 10px;
     }
 
     .all-current {
