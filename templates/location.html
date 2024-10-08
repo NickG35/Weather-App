@@ -76,8 +76,13 @@
         {% for loc in location %}
             <div class="all-current">
                 <div class="current-weather">
-                    <img class="big-icon" src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
-                    <p class="big-temp"><b>{{ loc.temperature }}</b><p class="degree">°F</p></p>
+                    <div class="icon-div">
+                        <img class="big-icon" src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
+                    </div>
+                    <div class="temp-div">
+                        <p class="big-temp"><b>{{ loc.temperature }}</b></p>
+                        <p class="degree">°F</p>
+                    </div>
                 </div>
                     <p class="big-desc">{{ loc.weather_description }}</p>
             </div>
