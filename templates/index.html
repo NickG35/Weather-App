@@ -7,15 +7,22 @@
 </form>
 
 {% if locations %}
-    <div class="current-block">
+    <div class="home-block">
         {% for location in locations %}
-            <div class="all-current">
-                <div class="current-weather">
-                    <a href="{{ url_for('location_page', location_name=location.city) }}">{{ location.city }}</a>
-                    <img src="http://openweathermap.org/img/wn/{{ location.icon }}.png" alt="Weather Icon">
-                    <p>{{ location.temperature }}</p>
+            <div class="home-current">
+                <div class="left-div">
+                    <a class="location-name" href="{{ url_for('location_page', location_name=location.city) }}">{{ location.city }}</a>
+                    <p class="big-desc">{{ location.weather_description }}</p>
                 </div>
-                    <p>{{ location.weather_description }}</p>
+                <div class="right-div">
+                    <div class="icon-div">
+                        <img class="big-icon" src="http://openweathermap.org/img/wn/{{ location.icon }}.png" alt="Weather Icon">
+                    </div>
+                    <div class="temp-div">
+                        <p class="big-temp"><b>{{ location.temperature }}</b></p>
+                        <p class="degree">°F</p>
+                    </div>
+                </div>
             </div>
         {% endfor %}
     </div>
