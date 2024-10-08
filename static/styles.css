@@ -78,11 +78,27 @@
     .current-block {
         display: flex;
         justify-content: center;
+        
+    }
+
+    .home-block {
+        border: 1px solid lightgray;
+        border-radius: 2px;
     }
 
     .current-weather {
         display: flex;
-        align-items: center;
+    }
+
+    .left-div {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .right-div {
+        display: flex;
+        justify-content: flex-end;
     }
 
     #popLink, #windLink, #tempLink {
@@ -103,9 +119,37 @@
         text-align: center;
     }
 
+    .home-current {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .location-name {
+        text-decoration: none;
+        color: black;
+        font-weight: bold;
+        font-size: 25px;
+    }
+
+    .temp-div {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 20px 0px;
+    }
+
+    .icon-div {
+        display: flex;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+    .big-desc {
+        color: gray;
+    }
+
     .big-icon {
         width: 100px;
-        height: 100px;
     }
 
     .big-temp {
@@ -114,10 +158,6 @@
 
     .degree {
         font-size: 20px;
-    }
-
-    .big-desc {
-        color: gray;
     }
 
     
