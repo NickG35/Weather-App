@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 import requests
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from flask_migrate import Migrate
 from datetime import datetime, timezone, date
 import calendar
@@ -26,8 +27,10 @@ class Location(db.Model):
     city = db.Column(db.String(100), nullable=False)
     temperature = db.Column(db.Integer, nullable=False)
     weather_description = db.Column(db.String(200), nullable=False)
-    time = db.Column(db.DateTime, default = datetime.now(timezone.utc))
+    time = db.Column(db.String(50), nullable=False)
     icon = db.Column(db.String(5))
+    tempmax = db.Column(db.Integer, nullable=True)
+    tempmin = db.Column(db.Integer, nullable=True)
 
 class Forecast(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -59,12 +62,14 @@ def get_weather(location):
     response = requests.get(API_URL, params=params)
     if response.status_code == 200:
         data = response.json()
+        formatted_time = datetime.fromtimestamp(data['dt']).strftime('%-I:%M %p')
         # save data to the database
         new_location = Location(
                 city = data['name'],
                 temperature = int(data['main']['temp']),
                 weather_description = data['weather'][0]['description'],
-                icon = data['weather'][0]['icon']
+                icon = data['weather'][0]['icon'],
+                time = str(formatted_time)
         )
         db.session.add(new_location)
         db.session.commit()
@@ -159,7 +164,7 @@ def get_hourly(location, lat, lon):
             wind_deg = int(hour['wind_deg'])
             # Determine the wind direction image
             if 0 <= wind_deg <= 22.5:
-                wind_image = 'north_arrow.png'  # Path to your north arrow image
+                wind_image = 'static/Images/north_arrow.png'  # Path to your north arrow image
             elif 22.6 <= wind_deg <= 67.5:
                 wind_image = 'static/Images/northeast_arrow.png'   # Path to your east arrow image
             elif 67.6 <= wind_deg <= 112.5:
@@ -211,14 +216,27 @@ def get_hourly(location, lat, lon):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    forecast = None
     if request.method == 'POST':
         #get_weather function runs with the city that is entered in form
-        location = request.form['location']
+        location = request.form['location'].strip().title()
         get_weather(location)
+        if location:
+            location_data = get_location(location)
+            lat, lon = location_data
+            get_forecast(location, lat, lon)
+            forecast = Forecast.query.filter_by(city=location).first()
+            new_location = Location.query.filter(func.lower(Location.city) == location.lower()).first()
+            if new_location:
+                new_location.tempmax = forecast.forecast_tempmax
+                new_location.tempmin = forecast.forecast_tempmin
+                db.session.commit()
+            else:
+                print(f'No location found for: {location}')        
 
     #query all locations to display on page 
     locations = Location.query.all()
-    return render_template("index.html", locations=locations)
+    return render_template("index.html", locations=locations, forecast=forecast)
 
 @app.route('/<location_name>')
 def location_page(location_name):
