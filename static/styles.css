@@ -6,22 +6,24 @@
 }
 
 .weather-block {
-    border: 1px solid;
+    border-top: none;
+    border: 1px solid lightgray;
 }
 
 .forecast-row {
     display: flex;
     align-items: center;
+    border-bottom: 1px solid lightgray;
 }
   
   /* Mobile Styles */
   @media (max-width: 575.99px) {
-    .weather-icon {
-        width: 70px;
+    #weather-icon {
+        width: 50px;
     }
 
     .weather-pic {
-        width: 70px;
+        width: 50px;
     }
 
     .weather-block {
@@ -49,6 +51,113 @@
         width: 85px;
         padding: 10px;
     }
+
+    .hourly-block {
+        border: 1px solid lightgray;
+        border-bottom: none;
+        display: flex;
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .hourly-column {
+        border-right: 1px solid lightgray;
+        display: flex;
+        flex-direction: column;
+        width: 20%;
+        padding: 10px;
+        text-align: center;
+        align-items: center;
+        font-size: 12px;
+    }
+
+    .tempMin {
+        color: gray;
+    }
+
+    .current-block {
+        display: flex;
+        justify-content: center;
+        
+    }
+
+
+    .current-weather {
+        display: flex;
+    }
+
+    .left-div {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .right-div {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    #popLink, #windLink, #tempLink {
+        text-decoration: none;
+        color: black;
+    }
+
+    .nav-link:active {
+        color: black;
+    }
+
+    .nav-underline{
+        justify-content: center;
+        padding: 10px;
+    }
+
+    .all-current {
+        text-align: center;
+    }
+
+    .home-current {
+        display: flex;
+        justify-content: space-between;
+        border: 1px solid lightgray;
+        border-radius: 2px;
+    }
+
+    .location-name {
+        text-decoration: none;
+        color: black;
+        font-weight: bold;
+        font-size: 25px;
+    }
+
+    .temp-div {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 20px 0px;
+    }
+
+    .icon-div {
+        display: flex;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+    .big-desc {
+        color: gray;
+    }
+
+    .big-icon {
+        width: 100px;
+    }
+
+    .big-temp {
+        font-size: 40px;
+    }
+
+    .degree {
+        font-size: 20px;
+    }
+
     
   }
   
