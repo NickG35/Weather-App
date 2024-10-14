@@ -1,35 +1,143 @@
 {% extends 'layout.html' %}
 
 {% block body %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const hideElements = (selector) => {
+            document.querySelectorAll(selector).forEach(element => {
+                element.style.display = 'none';
+            });
+        };
+        const showElements = (selector) => {
+            document.querySelectorAll(selector).forEach(element => {
+                element.style.display = 'block';
+            });
+        };
 
-<h1 class="title">Weather Today</h1>
+        const tempTab = document.querySelector('#tempLink');
+        const popTab = document.querySelector('#popLink');
+        const windTab = document.querySelector('#windLink');
+
+   
+        hideElements('.rainPic');
+        hideElements('.windPic');
+        hideElements('.hourPop');
+        hideElements('.hourWind');
+
+        // Show weatherPic and hourTemp initially
+        showElements('.weatherPic');
+        showElements('.hourTemp');
+
+        const removeActiveClasses = () => {
+            tempTab.classList.remove('active');
+            popTab.classList.remove('active');
+            windTab.classList.remove('active');
+        };
+
+        tempTab.addEventListener('click', function(){
+            showElements('.weatherPic');
+            showElements('.hourTemp');
+            hideElements('.rainPic');
+            hideElements('.hourPop');
+            hideElements('.windPic');
+            hideElements('.hourWind');
+            removeActiveClasses();
+            tempTab.classList.add('nav-link', 'active');
+
+        });
+        popTab.addEventListener('click', function(){
+            showElements('.rainPic');
+            showElements('.hourPop');
+            hideElements('.weatherPic');
+            hideElements('.hourTemp');
+            hideElements('.windPic');
+            hideElements('.hourWind');
+            removeActiveClasses();
+            popTab.classList.add('nav-link', 'active');
+
+        });
+        windTab.addEventListener('click', function(){
+            showElements('.windPic');
+            showElements('.hourWind');
+            hideElements('.rainPic');
+            hideElements('.hourPop');
+            hideElements('.weatherPic');
+            hideElements('.hourTemp');
+            removeActiveClasses();
+            windTab.classList.add('nav-link', 'active');
+        });
+
+
+    });
+</script>
+
 {% if location %}
-    {% for loc in location %}
-            <p>{{ loc.temperature }}</p>
-            <p>{{ loc.weather_description }}</p>
-            <img src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
-    {% endfor %}
+    <div class="current-block">
+        {% for loc in location %}
+            <div class="all-current">
+                <div class="current-weather">
+                    <div class="icon-div">
+                        <img class="big-icon" src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
+                    </div>
+                    <div class="temp-div">
+                        <p class="big-temp"><b>{{ loc.temperature }}</b></p>
+                        <p class="degree">°F</p>
+                    </div>
+                </div>
+                    <p class="big-desc">{{ loc.weather_description }}</p>
+            </div>
+        {% endfor %}
+    </div>
 {% else %}
         <p>No Information to Display</p>
 {% endif %}
 
-<h1 class="title">7-Day Forecast</h1>
+    {% if hourly %}
+        <ul class="nav nav-underline">
+            <li class="nav-item">
+                <a id="tempLink" class="nav-link active" href="#">Temperature</a>
+            </li>
+            <li class="nav-item">
+                <a id="popLink" class="nav-link" href="#">Precipitation</a>
+            </li>
+            <li class="nav-item">
+                <a id="windLink" class="nav-link" href="#">Wind</a>
+            </li>
+        </ul>
+        <div class="hourly-block">
+            {% for hour in hourly %}
+                <div class="hourly-column">
+                    <p><b>{{ hour.hourly_time }}</b></p>
+                    <img class="rainPic" id="weather-icon" src="/static/Images/raindrop.png" id="weather-icon">
+                    <img class="weatherPic" id="weather-icon" src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
+                    <img class="windPic" id="weather-icon" src="{{hour.wind_symbol}}">
+                    <p class="hourTemp">{{ hour.hourly_temp }} °</p>
+                    <p class="hourPop">{{hour.hourly_precipitation}} %</p>
+                    <p class="hourWind">{{ hour.wind_speed }} mph</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+            <p>No Hourly Date to Display</p>
+    {% endif %}
+
+
 <div class="weather-block">
     {% if forecast %}
         {% for fore in forecast %}
             <div class="forecast-row">
                 <div class="day-box">
-                    <p>{{ fore.forecast_day }}</p>
+                    <p><b>{{ fore.forecast_day }}</b></p>
                 </div>
                 <div class="weather-pic">
-                    <img class="weather-icon" src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
+                    <img id="weather-icon" src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
                 </div>
                 <div class="weather-desc">
                     <p>{{ fore.forecast_name }}</p>
                 </div>
                 <div class="weather-temp">
-                    <p>{{ fore.forecast_tempmax }}</p>
-                    <p>{{ fore.forecast_tempmin }}</p>
+                    <p>{{ fore.forecast_tempmax }}°</p>
+                    <p class="tempMin">{{ fore.forecast_tempmin }}°</p>
                 </div>
             </div>
         {% endfor %}
@@ -37,16 +145,4 @@
             <p>No Forecast to Display</p>
     {% endif %}
 </div>
-
-    <h1>Hourly</h1>
-    {% if hourly %}
-        {% for hour in hourly %}
-                <p>{{ hour.hourly_time }}</p>
-                <img src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
-                <p>{{ hour.hourly_name }}</p>
-                <p>{{ hour.hourly_temp }}</p>
-        {% endfor %}
-    {% else %}
-            <p>No Hourly Date to Display</p>
-    {% endif %}
 {% endblock %}
