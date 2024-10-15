@@ -16,6 +16,9 @@
                     <p class="big-desc">{{ location.weather_description }}</p>
                 </div>
                 <div class="right-div">
+                    <form method="post" action="{{ url_for('delete_location', id=location.id )}}">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
                     <div class="icon-div">
                         <img class="big-icon" src="http://openweathermap.org/img/wn/{{ location.icon }}.png" alt="Weather Icon">
                     </div>
