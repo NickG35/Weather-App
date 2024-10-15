@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import requests
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
@@ -213,6 +213,21 @@ def get_hourly(location, lat, lon):
         print(f"Status Code: {response.status_code}")
         print(f"Response: {response.text}")
         return None
+@app.route('/delete/<int:id>', methods=['POST', 'GET'])
+def delete_location(id):
+    try:
+        # try to do id to use the get not filter_by for tomorrow
+        deleted_location = Location.query.get(id)
+        if deleted_location:
+            db.session.delete(deleted_location)
+            db.session.commit()
+            return redirect(url_for('index'))
+        else:
+            return "Location not found", 404
+    except Exception as e:
+        db.session.rollback()
+        return str(e), 500
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
