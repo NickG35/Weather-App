@@ -1,6 +1,37 @@
 {% extends 'layout.html' %}
 
 {% block body %}
+<script>
+    async function deleteLocation(locationID) {
+        try {
+            const response = await fetch(`/delete/${locationID}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (data.success){
+                document.getElementById(`box${locationID}`).remove();
+                console.log('Location deleted successfully');
+            } else {
+                console.log('Failed to delete location: ' + data.message);
+
+            }
+        } catch(error) {
+            console.error('Error occurred:', error);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteButtons = document.querySelectorAll('.delete-button');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function (event) {
+                event.preventDefault(); // Prevent the default anchor behavior
+                const locationID = this.getAttribute('data-id');
+                deleteLocation(locationID);
+            });
+        });
+    });
+</script>
 <form action="/" method="post" class="locationForm">
     <input name="location" class="locationName" placeholder="search location">
     <button class="btn btn-secondary">Search</button>
@@ -9,25 +40,29 @@
 {% if locations %}
     <div class="home-block">
         {% for location in locations %}
-            <div class="home-current">
+            <div id='box{{location.id}}' class="home-current">
                 <div class="left-div">
                     <a class="location-name" href="{{ url_for('location_page', location_name=location.city) }}">{{ location.city }}</a>
-                    <p class="big-desc">{{ location.time }}</p>
-                    <p class="big-desc">{{ location.weather_description }}</p>
+                    <span class="big-desc">{{ location.time }}</span>
+                    <span class="big-desc">{{ location.weather_description }}</span>
                 </div>
                 <div class="right-div">
-                    <form method="post" action="{{ url_for('delete_location', id=location.id )}}">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
                     <div class="icon-div">
-                        <img class="big-icon" src="http://openweathermap.org/img/wn/{{ location.icon }}.png" alt="Weather Icon">
+                        <img class="big-icon" src="http://openweathermap.org/img/wn/{{ location.icon }}.png" alt="Weather Icon">  
+                        <div class="temp-div">            
+                            <p class="big-temp"><b>{{ location.temperature }}</b></p>
+                            <p class="degree">°F</p>
+                        </div>
                     </div>
-                    <div class="temp-div">
-                        <p class="big-temp"><b>{{ location.temperature }}</b></p>
-                        <p class="degree">°F</p>
-                        <p>{{ location.tempmax }}</p>
-                        <p>{{location.tempmin }}</p>
+                    <div class="temps-div">
+                        <span class="mini-temp">H:{{ location.tempmax }}</span>
+                        <span class="mini-temp">L:{{location.tempmin }}</span>
                     </div>
+                
+                        <button type="button" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis fa-sm" style="color: darkgray;"></i></button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item delete-button" href="#" data-id="{{location.id}}">Delete</a></li>
+                        </ul>
                 </div>
             </div>
         {% endfor %}
