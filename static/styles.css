@@ -94,6 +94,7 @@
 
     .right-div {
         display: flex;
+        flex-direction: column;
         justify-content: flex-end;
     }
 
@@ -131,15 +132,28 @@
 
     .temp-div {
         display: flex;
-        justify-content: flex-end;
         align-items: center;
-        padding: 20px 0px;
+        justify-content: flex-end;
     }
 
     .icon-div {
         display: flex;
         align-items: center;
-        margin-bottom: 18px;
+    }
+
+    .temps-div {
+        display: flex;
+        justify-content: center;
+    }
+
+    .dropdown-toggle {
+        border: none;
+        background-color: white;
+    }
+
+    .delete-form {
+        display: flex;
+        justify-content: flex-end;
     }
 
     .big-desc {
@@ -152,6 +166,11 @@
 
     .big-temp {
         font-size: 40px;
+    }
+
+    .mini-temp {
+        margin: 5px;
+        color: gray;
     }
 
     .degree {
