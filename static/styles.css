@@ -130,10 +130,20 @@
         font-size: 25px;
     }
 
+    .location-link {
+        text-decoration: none;
+        color: black;
+        display: block;
+    }
+
     .temp-div {
         display: flex;
         align-items: center;
         justify-content: flex-end;
+    }
+
+    .search-form {
+        text-align: center;
     }
 
     .icon-div {
@@ -151,10 +161,24 @@
         background-color: white;
     }
 
+    #deleteButton {
+        text-align: center;
+        color: red;
+    }
+
     .delete-form {
         display: flex;
         justify-content: flex-end;
     }
+
+    .deleteButton {
+        background-color: white;
+        display: flex;
+        border: none;
+        height: 10px;
+        justify-content: flex-end;
+    }
+
 
     .big-desc {
         color: gray;
