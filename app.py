@@ -247,7 +247,8 @@ def index():
                 new_location.tempmin = forecast.forecast_tempmin
                 db.session.commit()
             else:
-                print(f'No location found for: {location}')        
+                print(f'No location found for: {location}')   
+        return redirect(url_for('index'))     
 
     #query all locations to display on page 
     locations = Location.query.all()
