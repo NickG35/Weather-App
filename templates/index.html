@@ -7,15 +7,14 @@
             const response = await fetch(`/delete/${locationID}`, {
                 method: 'DELETE',
             });
-
+            
             const data = await response.json();
 
             if (data.success){
                 document.getElementById(`box${locationID}`).remove();
                 console.log('Location deleted successfully');
             } else {
-                console.log('Failed to delete location: ' + data.message);
-
+                console.log('Fail ed to delete location: ' + data.message);
             }
         } catch(error) {
             console.error('Error occurred:', error);
@@ -32,17 +31,20 @@
         });
     });
 </script>
-<form action="/" method="post" class="locationForm">
-    <input name="location" class="locationName" placeholder="search location">
-    <button class="btn btn-secondary">Search</button>
-</form>
+<div class="search-form">
+    <form action="/" method="post" class="locationForm">
+        <input name="location" class="locationName" placeholder="search location">
+        <button class="btn btn-secondary">Search</button>
+    </form>
+</div>
 
 {% if locations %}
     <div class="home-block">
         {% for location in locations %}
+        <a href="{{ url_for('location_page', location_name=location.city) }}" class="location-link">
             <div id='box{{location.id}}' class="home-current">
                 <div class="left-div">
-                    <a class="location-name" href="{{ url_for('location_page', location_name=location.city) }}">{{ location.city }}</a>
+                    <span class="location-name">{{ location.city }}</span>
                     <span class="big-desc">{{ location.time }}</span>
                     <span class="big-desc">{{ location.weather_description }}</span>
                 </div>
@@ -59,12 +61,15 @@
                         <span class="mini-temp">L:{{location.tempmin }}</span>
                     </div>
                 
-                        <button type="button" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis fa-sm" style="color: darkgray;"></i></button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item delete-button" href="#" data-id="{{location.id}}">Delete</a></li>
+                        <button class="deleteButton" type="button" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i></button>
+                        <ul id="menuDrop" class="dropdown-menu">
+                            <li>
+                                <button id="deleteButton" class="dropdown-item delete-button" data-id="{{location.id}}">Delete</button>
+                            </li>
                         </ul>
                 </div>
             </div>
+        </a>
         {% endfor %}
     </div>
 {% else %}
