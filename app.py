@@ -236,14 +236,12 @@ def delete_location(id):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        print("POST request received")
-        #get_weather function runs with the city that is entered in form
-        location = request.form['location'].strip().title()
+        data = request.get_json()
+        location = data.get('location', '').strip().title()
         existing_location = Location.query.filter_by(city=location).first()
 
         if existing_location:
-            print("Error: location already exists")
-            return redirect(url_for('index'))
+            return jsonify({'success': False, 'message': "Error: location already exists"}), 400 
         else:
             location_data = get_location(location)
             if location:
@@ -270,8 +268,17 @@ def index():
                 db.session.add(new_location)
                 db.session.commit()
 
-
-            return redirect(url_for('index'))
+                return jsonify ({
+                    'success': True,
+                    'id': new_location.id,
+                    'city': location,
+                    'time': formatted_time,
+                    'icon': current_weather_data['weather'][0]['icon'],
+                    'description': current_weather_data['weather'][0]['description'],
+                    'temperature': int(current_weather_data['main']['temp']),
+                    'tempmax': forecast_temp_max,
+                    'tempmin': forecast_temp_min
+                }), 201
     else:
         #query all locations to display on page 
         locations = Location.query.order_by(desc(Location.time)).all()
