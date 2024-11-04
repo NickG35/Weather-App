@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import requests
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy import func, desc
 from flask_migrate import Migrate
 from datetime import datetime, timezone, date
 import calendar
@@ -24,7 +24,7 @@ GEO_URL = "http://api.openweathermap.org/geo/1.0/direct"
 #create models for db
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    city = db.Column(db.String(100), nullable=False)
+    city = db.Column(db.String(100),nullable=False)
     temperature = db.Column(db.Integer, nullable=False)
     weather_description = db.Column(db.String(200), nullable=False)
     time = db.Column(db.String(50), nullable=False)
@@ -62,17 +62,6 @@ def get_weather(location):
     response = requests.get(API_URL, params=params)
     if response.status_code == 200:
         data = response.json()
-        formatted_time = datetime.fromtimestamp(data['dt']).strftime('%-I:%M %p')
-        # save data to the database
-        new_location = Location(
-                city = data['name'],
-                temperature = int(data['main']['temp']),
-                weather_description = data['weather'][0]['description'],
-                icon = data['weather'][0]['icon'],
-                time = str(formatted_time)
-        )
-        db.session.add(new_location)
-        db.session.commit()
         return data
 
     else:
@@ -105,7 +94,6 @@ def get_forecast(location, lat, lon):
         'exclude': 'current,minutely,hourly,alerts',
         'appid': API_KEY
     }
-    print(f"Requesting forecast for: {params}")
     response = requests.get(API7_URL, params=params)
     
     if response.status_code == 200:
@@ -127,7 +115,6 @@ def get_forecast(location, lat, lon):
                     forecast_tempmin=int(day['temp']['min'])
                 )
                 db.session.add(new_forecast)
-                print(f"Saving new forecast for {location} on {forecast_day_name}: max {day['temp']['max']}, min {day['temp']['min']}")
 
         try:
             db.session.commit()
@@ -142,6 +129,26 @@ def get_forecast(location, lat, lon):
         print(f"Response: {response.text}")
         return None
 
+def first_forecast(location, lat, lon):
+    params = {
+        'lat': lat,
+        'lon': lon,
+        'units': 'imperial',
+        'exclude': 'current,minutely,hourly,alerts',
+        'appid': API_KEY
+    }
+    response = requests.get(API7_URL, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        # Return only the first day's data
+        return data['daily'][0]
+    else:
+        print(f"Error: Unable to retrieve forecast data for {location}")
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.text}")
+        return None
+
 def get_hourly(location, lat, lon):
     params = {
         'lat': lat,
@@ -150,12 +157,10 @@ def get_hourly(location, lat, lon):
         'exclude': 'current,minutely,daily,alerts',
         'appid': API_KEY
     }
-    print(f"Requesting hourly for: {params}")
     response = requests.get(API7_URL, params=params)
     
     if response.status_code == 200:
         data = response.json()
-        print(data)
 
         # Save first 24 hours' data to the database
         for hour in data['hourly'][:24]:
@@ -198,7 +203,6 @@ def get_hourly(location, lat, lon):
                     wind_symbol=wind_image
                 )
                 db.session.add(new_hourly)
-                print(f"Saving new hourly forecast for {location} at {forecast_hour}: temp {hour['temp']}")
 
         try:
             db.session.commit()
@@ -228,31 +232,50 @@ def delete_location(id):
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
-
+#figured out why the submissions duplicate, im making new entries for the get forecast and get weather, make a new view to just get the temp max and min.
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    forecast = None
     if request.method == 'POST':
+        print("POST request received")
         #get_weather function runs with the city that is entered in form
         location = request.form['location'].strip().title()
-        get_weather(location)
-        if location:
-            location_data = get_location(location)
-            lat, lon = location_data
-            get_forecast(location, lat, lon)
-            forecast = Forecast.query.filter_by(city=location).first()
-            new_location = Location.query.filter(func.lower(Location.city) == location.lower()).first()
-            if new_location:
-                new_location.tempmax = forecast.forecast_tempmax
-                new_location.tempmin = forecast.forecast_tempmin
-                db.session.commit()
-            else:
-                print(f'No location found for: {location}')   
-        return redirect(url_for('index'))     
+        existing_location = Location.query.filter_by(city=location).first()
 
-    #query all locations to display on page 
-    locations = Location.query.all()
-    return render_template("index.html", locations=locations, forecast=forecast)
+        if existing_location:
+            print("Error: location already exists")
+            return redirect(url_for('index'))
+        else:
+            location_data = get_location(location)
+            if location:
+                lat, lon = location_data 
+                current_weather_data = get_weather(location)
+
+                formatted_time = datetime.fromtimestamp(current_weather_data['dt']).strftime('%-I:%M %p')
+                
+                first_day = first_forecast(location, lat, lon)
+                if first_day:
+                    forecast_temp_max = int(first_day['temp']['max'])
+                    forecast_temp_min = int(first_day['temp']['min'])
+                
+
+                new_location = Location(
+                    city=location,
+                    time=formatted_time,
+                    icon=current_weather_data['weather'][0]['icon'], 
+                    weather_description=current_weather_data['weather'][0]['description'],  
+                    temperature=int(current_weather_data['main']['temp']),
+                    tempmax = forecast_temp_max,
+                    tempmin = forecast_temp_min 
+                )
+                db.session.add(new_location)
+                db.session.commit()
+
+
+            return redirect(url_for('index'))
+    else:
+        #query all locations to display on page 
+        locations = Location.query.order_by(desc(Location.time)).all()
+        return render_template("index.html", locations=locations)
 
 @app.route('/<location_name>')
 def location_page(location_name):
@@ -262,9 +285,7 @@ def location_page(location_name):
         get_forecast(location_name, lat, lon)
         get_hourly(location_name, lat, lon)
         forecast = Forecast.query.filter_by(city=location_name).all()
-        hourly = Hourly.query.filter_by(city=location_name).all()
-        print("Forecast from DB:", forecast)
-        print("Hourly from DB:", hourly)            
+        hourly = Hourly.query.filter_by(city=location_name).all()        
     else:
         forecast = []
         hourly = []
