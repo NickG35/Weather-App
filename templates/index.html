@@ -11,15 +11,19 @@
             const data = await response.json();
 
             if (data.success){
-                document.getElementById(`box${locationID}`).remove();
+                const box = document.getElementById(`box${locationID}`)
+                box.remove();
+                const cityName = box.getAttribute('data-name');
                 console.log('Location deleted successfully');
             } else {
-                console.log('Fail ed to delete location: ' + data.message);
+                console.log('Failed to delete location: ' + data.message);
             }
+
         } catch(error) {
             console.error('Error occurred:', error);
         }
     }
+
     document.addEventListener('DOMContentLoaded', function () {
         const deleteButtons = document.querySelectorAll('.delete-button');
         deleteButtons.forEach(button => {
@@ -31,22 +35,22 @@
         });
     });
 </script>
-<div class="search-form">
-    <form action="/" method="post" class="locationForm">
-        <input name="location" class="locationName" placeholder="search location">
-        <button class="btn btn-secondary">Search</button>
-    </form>
-</div>
+    <div class="search-form">
+        <form action="/" method="post" class="locationForm">
+            <input name="location" class="locationName" placeholder="search location">
+            <button id="submitbtn" class="btn btn-secondary">Search</button>
+        </form>
+    </div>
 
-{% if locations %}
     <div class="home-block">
+        <p>No Locations to Display</p>
         {% for location in locations %}
         <a href="{{ url_for('location_page', location_name=location.city) }}" class="location-link">
-            <div id='box{{location.id}}' class="home-current">
+            <div id='box{{location.id}}' data-name="{{ location.city }}" class="home-current">
                 <div class="left-div">
                     <span class="location-name">{{ location.city }}</span>
-                    <span class="big-desc">{{ location.time }}</span>
-                    <span class="big-desc">{{ location.weather_description }}</span>
+                    <span id="location-time" class="big-desc">{{ location.time }}</span>
+                    <span id="location-desc" class="big-desc">{{ location.weather_description }}</span>
                 </div>
                 <div class="right-div">
                     <div class="icon-div">
@@ -57,14 +61,14 @@
                         </div>
                     </div>
                     <div class="temps-div">
-                        <span class="mini-temp">H:{{ location.tempmax }}</span>
-                        <span class="mini-temp">L:{{location.tempmin }}</span>
+                        <span id="tempmax" class="mini-temp">H:{{ location.tempmax }}</span>
+                        <span id="tempmin" class="mini-temp">L:{{location.tempmin }}</span>
                     </div>
                 
                         <button class="deleteButton" type="button" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i></button>
                         <ul id="menuDrop" class="dropdown-menu">
                             <li>
-                                <button id="deleteButton" class="dropdown-item delete-button" data-id="{{location.id}}">Delete</button>
+                                <button id="deleteButton" class="dropdown-item delete-button" data-city="{{location.city}}" data-id="{{location.id}}">Delete</button>
                             </li>
                         </ul>
                 </div>
@@ -72,7 +76,4 @@
         </a>
         {% endfor %}
     </div>
-{% else %}
-        <p>No Locations to Display</p>
-{% endif %}
 {% endblock %}
