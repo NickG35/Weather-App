@@ -24,6 +24,67 @@
         }
     }
 
+    async function createLocation() {
+        const locationInput = document.querySelector('.locationName').value.trim();
+        try {
+            const response = await fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ location: locationInput })
+            });
+            
+            const data = await response.json();
+
+
+            if (data.success){
+                let locationBox = document.getElementById(`box${data.id}`);
+                if (!locationBox) {
+                    locationBox = document.createElement('div');
+                    locationBox.id = `box${data.id}`;
+                    locationBox.setAttribute('data-name', data.city);
+                    locationBox.className = 'home-current';
+                    document.querySelector('.home-block').prepend(locationBox);
+                }
+                locationBox.innerHTML = `
+                    <div class="left-div">
+                        <span class="location-name">${data.city}</span>
+                        <span id="location-time" class="big-desc">${data.time}</span>
+                        <span id="location-desc" class="big-desc">${data.weather_description}</span>
+                    </div>
+                    <div class="right-div">
+                        <div class="icon-div">
+                            <img class="big-icon" src="http://openweathermap.org/img/wn/${data.icon}.png" alt="Weather Icon">  
+                            <div class="temp-div">            
+                                <p class="big-temp"><b>${data.temperature}</b></p>
+                                <p class="degree">°F</p>
+                            </div>
+                        </div>
+                        <div class="temps-div">
+                            <span id="tempmax" class="mini-temp">H:${data.tempmax}</span>
+                            <span id="tempmin" class="mini-temp">L:${data.tempmin}</span>
+                        </div>
+                        <button class="deleteButton" type="button" data-bs-toggle="dropdown">
+                            <i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i>
+                        </button>
+                        <ul id="menuDrop" class="dropdown-menu">
+                            <li>
+                                <button id="deleteButton" class="dropdown-item delete-button" data-city="${data.city}" data-id="${data.id}">Delete</button>
+                            </li>
+                        </ul>
+                    </div>
+                `;
+                
+            } else {
+                console.log('Failed to find location: ' + data.message);
+            }
+
+        } catch(error) {
+            console.error('Error occurred:', error);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const deleteButtons = document.querySelectorAll('.delete-button');
         deleteButtons.forEach(button => {
@@ -33,6 +94,11 @@
                 deleteLocation(locationID);
             });
         });
+        const searchForm = document.querySelector('.locationForm');
+        searchForm.addEventListener('submit', function(event){
+            event.preventDefault();
+            createLocation();
+        })
     });
 </script>
     <div class="search-form">
