@@ -31,6 +31,7 @@ class Location(db.Model):
     icon = db.Column(db.String(5))
     tempmax = db.Column(db.Integer, nullable=True)
     tempmin = db.Column(db.Integer, nullable=True)
+    submission_time = db.Column(db.DateTime, default=datetime.now)
 
 class Forecast(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -299,7 +300,7 @@ def index():
                 }), 201
     else:
         #query all locations to display on page 
-        locations = Location.query.order_by(desc(Location.time)).all()
+        locations = Location.query.order_by(desc(Location.submission_time)).all()
         return render_template("index.html", locations=locations)
 
 @app.route('/<location_name>')
