@@ -77,6 +77,15 @@
                     </div>
                 `;
                 
+                document.querySelectorAll('.delete-button');
+                const deleteButtons = document.querySelectorAll('.delete-button');
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function (event){
+                        event.preventDefault();
+                        const locationID = this.getAttribute('data-id');
+                        deleteLocation(locationID);
+                    })
+                })
             } else {
                 console.log('Failed to find location: ' + data.message);
             }
@@ -108,9 +117,8 @@
             <button id="submitbtn" class="btn btn-secondary">Search</button>
         </form>
     </div>
-
     <div class="home-block">
-        <p>No Locations to Display</p>
+        {% if locations %}
         {% for location in locations %}
         <a href="{{ url_for('location_page', location_name=location.city) }}" class="location-link">
             <div id='box{{location.id}}' data-name="{{ location.city }}" class="home-current">
@@ -142,5 +150,8 @@
             </div>
         </a>
         {% endfor %}
+        {% else %}
+            <p> No locations to display</p>
+        {% endif %}
     </div>
 {% endblock %}
