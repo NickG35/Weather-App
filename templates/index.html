@@ -40,6 +40,7 @@
 
             if (data.success){
                 let locationBox = document.getElementById(`box${data.id}`);
+                document.querySelector('.locationName').value = '';
                 if (!locationBox) {
                     locationBox = document.createElement('div');
                     locationBox.id = `box${data.id}`;
@@ -51,7 +52,7 @@
                     <div class="left-div">
                         <span class="location-name">${data.city}</span>
                         <span id="location-time" class="big-desc">${data.time}</span>
-                        <span id="location-desc" class="big-desc">${data.weather_description}</span>
+                        <span id="location-desc" class="big-desc">${data.description}</span>
                     </div>
                     <div class="right-div">
                         <div class="icon-div">
