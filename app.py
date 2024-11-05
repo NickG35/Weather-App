@@ -59,13 +59,20 @@ def get_weather(location):
         'appid': API_KEY,
         'units': 'imperial'
     }
-    response = requests.get(API_URL, params=params)
-    if response.status_code == 200:
-        data = response.json()
-        return data
+    try:
+        response = requests.get(API_URL, params=params)
+        if response.status_code == 200:
+            data = response.json()
+            return data
 
-    else:
+        else:
+            print(f"Status Code: {response.status_code}")
+            print(f"Response: {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Error: Failed to retrieve weather data for {location} - {e}")
         return None
+            
 
 def get_location(city):
     params = {
@@ -73,18 +80,29 @@ def get_location(city):
         'appid': API_KEY,
         'limit': 1
     }
-    response = requests.get(GEO_URL, params=params)
-    if response.status_code == 200:
-        data = response.json()
-        if data:
-            lat = data[0]['lat']
-            lon = data[0]['lon']
-            return lat, lon
+    try:
+        response = requests.get(GEO_URL, params=params)
+        if response.status_code == 200:
+            data = response.json()
+            if data:
+                lat = data[0]['lat']
+                lon = data[0]['lon']
+                if lat and lon is not None:
+                    return lat, lon
+                else:
+                    print(f"Error: Incomplete data for {city}")
+                    return None
+            else:
+                print(f"Error: No location data found for {city}")
+                return None
         else:
+            print(f"Status Code: {response.status_code}")
+            print(f"Response: {response.text}")
             return None
-    else:
-        print(f"Error: Failed to retrieve location data for {city}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error: Failed to retrieve location data for {city} - {e}")
         return None
+
     
 def get_forecast(location, lat, lon):
     params = {
