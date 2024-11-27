@@ -12,7 +12,9 @@
 
             if (data.success){
                 const box = document.getElementById(`box${locationID}`)
-                box.remove();
+                if (box){
+                    box.remove();
+                }
                 const cityName = box.getAttribute('data-name');
                 console.log('Location deleted successfully');
             } else {
@@ -39,20 +41,26 @@
 
 
             if (data.success){
+                console.log('location created');
                 let locationBox = document.getElementById(`box${data.id}`);
                 document.querySelector('.locationName').value = '';
                 if (!locationBox) {
+                    locationLink = document.createElement('a');
+                    locationLink.href = `/${data.city}`;
+                    locationLink.className = 'location-link';
                     locationBox = document.createElement('div');
                     locationBox.id = `box${data.id}`;
                     locationBox.setAttribute('data-name', data.city);
                     locationBox.className = 'home-current';
-                    document.querySelector('.home-block').prepend(locationBox);
+
+                    locationLink.prepend(locationBox);
+                    document.querySelector('.home-block').prepend(locationLink);
                 }
                 locationBox.innerHTML = `
                     <div class="left-div">
                         <span class="location-name">${data.city}</span>
-                        <span id="location-time" class="big-desc">${data.time}</span>
-                        <span id="location-desc" class="big-desc">${data.description}</span>
+                        <span id="location-desc" class="big-desc">${data.weather_description}</span>
+                        <small id="location-time" class="big-desc">Last updated at ${data.time}</small>
                     </div>
                     <div class="right-div">
                         <div class="icon-div">
@@ -77,7 +85,6 @@
                     </div>
                 `;
                 
-                document.querySelectorAll('.delete-button');
                 const deleteButtons = document.querySelectorAll('.delete-button');
                 deleteButtons.forEach(button => {
                     button.addEventListener('click', function (event){
@@ -95,6 +102,77 @@
         }
     }
 
+    async function updateLocation(){
+
+        locationBoxes = document.querySelectorAll('.home-current');
+        if(locationBoxes.length === 0 ){
+            console.log('No locations to update.');
+            return;
+        }
+
+        try{
+            const response = await fetch('/update');
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(`Error: ${response.status} ${response.statusText}`);
+                return;
+            }
+
+            console.log('locations updated')
+            
+            let updatedWeather = data.updated_data
+            updatedWeather.forEach(location => {
+                let locationBox = document.getElementById(`box${location.id}`);
+                locationBox.innerHTML = `
+                    <div class="left-div">
+                        <span class="location-name">${location.city}</span>
+                        <span id="location-desc" class="big-desc">${location.weather_description}</span>
+                        <small id="location-time" class="big-desc">Last updated at ${location.time}</small>
+                    </div>
+                    <div class="right-div">
+                        <div class="icon-div">
+                            <img class="big-icon" src="http://openweathermap.org/img/wn/${location.icon}.png" alt="Weather Icon">  
+                            <div class="temp-div">            
+                                <p class="big-temp"><b>${location.temperature}</b></p>
+                                <p class="degree">°F</p>
+                            </div>
+                        </div>
+                        <div class="temps-div">
+                            <span id="tempmax" class="mini-temp">H:${location.tempmax}</span>
+                            <span id="tempmin" class="mini-temp">L:${location.tempmin}</span>
+                        </div>
+                        <button class="deleteButton" type="button" data-bs-toggle="dropdown">
+                            <i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i>
+                        </button>
+                        <ul id="menuDrop" class="dropdown-menu">
+                            <li>
+                                <button id="deleteButton" class="dropdown-item delete-button" data-city="${location.city}" data-id="${location.id}">Delete</button>
+                            </li>
+                        </ul>
+                    </div>
+                `;
+                
+                const deleteButtons = document.querySelectorAll('.delete-button');
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function (event){
+                        event.preventDefault();
+                        const locationID = this.getAttribute('data-id');
+                        deleteLocation(locationID);
+                    })
+                })
+
+            });
+            
+            
+
+        } catch(error){
+            console.error('There was a problem fetching data:', error);
+        }
+    }
+
+        setInterval(updateLocation, 1800000);
+
     document.addEventListener('DOMContentLoaded', function () {
         const deleteButtons = document.querySelectorAll('.delete-button');
         deleteButtons.forEach(button => {
@@ -108,7 +186,10 @@
         searchForm.addEventListener('submit', function(event){
             event.preventDefault();
             createLocation();
+            const new_date = new Date();
+            console.log(new_date);
         })
+        updateLocation()
     });
 </script>
     <div class="search-form">
@@ -124,8 +205,8 @@
             <div id='box{{location.id}}' data-name="{{ location.city }}" class="home-current">
                 <div class="left-div">
                     <span class="location-name">{{ location.city }}</span>
-                    <span id="location-time" class="big-desc">{{ location.time }}</span>
                     <span id="location-desc" class="big-desc">{{ location.weather_description }}</span>
+                    <small id="location-time" class="big-desc">Last updated at {{ location.time }}</small>
                 </div>
                 <div class="right-div">
                     <div class="icon-div">
