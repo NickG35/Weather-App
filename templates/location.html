@@ -2,7 +2,20 @@
 
 {% block body %}
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+        async function fetchWeather(location){
+            try{
+                const response = await fetch(`api/${location}`);
+                const data = await response.json();
+                if (!response.ok) {
+                    console.error(`Error: ${response.status} ${response.statusText}`);
+                }
+                console.log('Forecast:', data.forecast, 'Hourly:', data.hourly);
+            } catch(error){
+                console.error('There was a problem fetching data:', error);
+            }
+        }
+         
+    document.addEventListener("DOMContentLoaded", function() {       
         const hideElements = (selector) => {
             document.querySelectorAll(selector).forEach(element => {
                 element.style.display = 'none';
@@ -67,17 +80,17 @@
             windTab.classList.add('nav-link', 'active');
         });
 
-
+        const location = document.querySelector('.big-icon').getAttribute('data-city');
+        fetchWeather(location);
     });
 </script>
 
-{% if location %}
     <div class="current-block">
         {% for loc in location %}
             <div class="all-current">
                 <div class="current-weather">
                     <div class="icon-div">
-                        <img class="big-icon" src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
+                        <img data-city="{{ loc.city }}"class="big-icon" src="http://openweathermap.org/img/wn/{{ loc.icon }}.png" alt="Weather Icon">
                     </div>
                     <div class="temp-div">
                         <p class="big-temp"><b>{{ loc.temperature }}</b></p>
@@ -88,11 +101,8 @@
             </div>
         {% endfor %}
     </div>
-{% else %}
-        <p>No Information to Display</p>
-{% endif %}
 
-    {% if hourly %}
+ 
         <ul class="nav nav-underline">
             <li class="nav-item">
                 <a id="tempLink" class="nav-link active" href="#">Temperature</a>
@@ -105,44 +115,44 @@
             </li>
         </ul>
         <div class="hourly-block">
-            {% for hour in hourly %}
-                <div class="hourly-column">
-                    <p><b>{{ hour.hourly_time }}</b></p>
-                    <img class="rainPic" id="weather-icon" src="/static/Images/raindrop.png" id="weather-icon">
-                    <img class="weatherPic" id="weather-icon" src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
-                    <img class="windPic" id="weather-icon" src="{{hour.wind_symbol}}">
-                    <p class="hourTemp">{{ hour.hourly_temp }} °</p>
-                    <p class="hourPop">{{hour.hourly_precipitation}} %</p>
-                    <p class="hourWind">{{ hour.wind_speed }} mph</p>
-                </div>
-            {% endfor %}
+            {% if hourly %}
+                {% for hour in hourly %}
+                    <div class="hourly-column">
+                        <p><b>{{ hour.hourly_time }}</b></p>
+                        <img class="rainPic" id="weather-icon" src="/static/Images/raindrop.png" id="weather-icon">
+                        <img class="weatherPic" id="weather-icon" src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
+                        <img class="windPic" id="weather-icon" src="{{hour.wind_symbol}}">
+                        <p class="hourTemp">{{ hour.hourly_temp }} °</p>
+                        <p class="hourPop">{{hour.hourly_precipitation}} %</p>
+                        <p class="hourWind">{{ hour.wind_speed }} mph</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No hourly data available.</p>
+            {% endif %}
         </div>
-    {% else %}
-            <p>No Hourly Date to Display</p>
-    {% endif %}
-
 
 <div class="weather-block">
-    {% if forecast %}
-        {% for fore in forecast %}
-            <div class="forecast-row">
-                <div class="day-box">
-                    <p><b>{{ fore.forecast_day }}</b></p>
+        {% if forecast %}
+            {% for fore in forecast %}
+                <div class="forecast-row">
+                    <div class="day-box">
+                        <p><b>{{ fore.forecast_day }}</b></p>
+                    </div>
+                    <div class="weather-pic">
+                        <img id="weather-icon" src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
+                    </div>
+                    <div class="weather-desc">
+                        <p>{{ fore.forecast_name }}</p>
+                    </div>
+                    <div class="weather-temp">
+                        <p>{{ fore.forecast_tempmax }}°</p>
+                        <p class="tempMin">{{ fore.forecast_tempmin }}°</p>
+                    </div>
                 </div>
-                <div class="weather-pic">
-                    <img id="weather-icon" src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
-                </div>
-                <div class="weather-desc">
-                    <p>{{ fore.forecast_name }}</p>
-                </div>
-                <div class="weather-temp">
-                    <p>{{ fore.forecast_tempmax }}°</p>
-                    <p class="tempMin">{{ fore.forecast_tempmin }}°</p>
-                </div>
-            </div>
-        {% endfor %}
-    {% else %}
-            <p>No Forecast to Display</p>
-    {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No forecast data available</p>
+        {% endif %}
 </div>
 {% endblock %}
