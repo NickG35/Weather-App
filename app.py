@@ -3,7 +3,7 @@ import requests
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func, desc
 from flask_migrate import Migrate
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, timedelta
 import calendar
 
 
@@ -41,6 +41,7 @@ class Forecast(db.Model):
     forecast_name = db.Column(db.String(100), nullable=False)
     forecast_tempmax = db.Column(db.Integer, nullable=False)
     forecast_tempmin = db.Column(db.Integer, nullable=False)
+    last_updated = db.Column(db.DateTime, default=datetime.now)
 
 class Hourly(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,8 +54,9 @@ class Hourly(db.Model):
     wind_speed = db.Column(db.Integer, nullable=False)
     wind_deg = db.Column(db.Integer, nullable=False)
     wind_symbol = db.Column(db.String(50), nullable=False)
+    last_updated = db.Column(db.DateTime, default=datetime.now)
 
-def get_weather(location):
+def get_current(location):
     params = {
         'q': location,
         'appid': API_KEY,
@@ -62,18 +64,89 @@ def get_weather(location):
     }
     try:
         response = requests.get(API_URL, params=params)
-        if response.status_code == 200:
-            data = response.json()
-            return data
+        data = response.json()
+        if data:
+            formatted_time = datetime.fromtimestamp(data['dt']).strftime('%-I:%M %p')
+            coordinates = get_location(location)
+            lat, lon = coordinates
+            first_day = first_forecast(location, lat, lon)
+            forecast_temp_max = int(first_day['temp']['max'])
+            forecast_temp_min = int(first_day['temp']['min'])
 
-        else:
-            print(f"Status Code: {response.status_code}")
-            print(f"Response: {response.text}")
-            return None
+            existing_location = Location.query.filter_by(city=location).first()
+            if existing_location:
+                existing_location.time = formatted_time
+                existing_location.icon = data['weather'][0]['icon']
+                existing_location.weather_description = data['weather'][0]['description']
+                existing_location.temperature = int(data['main']['temp'])
+                existing_location.tempmax = forecast_temp_max
+                existing_location.tempmin = forecast_temp_min
+            else:
+                new_location = Location(
+                    city = location,
+                    time = formatted_time,
+                    icon = data['weather'][0]['icon'], 
+                    weather_description = data['weather'][0]['description'],  
+                    temperature = int(data['main']['temp']),
+                    tempmax = forecast_temp_max,
+                    tempmin = forecast_temp_min
+                )
+
+                db.session.add(new_location)
+        
+            db.session.commit()
+            locationObj = existing_location or new_location
+            return {
+                'id': locationObj.id,
+                'city': location,
+                'time': formatted_time,
+                'icon': data['weather'][0]['icon'],
+                'weather_description': data['weather'][0]['description'],
+                'temperature': int(data['main']['temp']),
+                'tempmax': forecast_temp_max,
+                'tempmin': forecast_temp_min,
+            }
+     
     except requests.exceptions.RequestException as e:
         print(f"Error: Failed to retrieve weather data for {location} - {e}")
-        return None
-            
+    except Exception as e:
+        print(f"Error committing to the database: {e}")
+        db.session.rollback()
+    return None
+
+def update_current():
+    existing_locations = Location.query.all()
+    update_locations = []
+    for locations in existing_locations:
+        try:
+            new_weather = get_current(locations.city)
+            if new_weather:
+                locations.time = new_weather['time']
+                locations.icon = new_weather['icon']
+                locations.weather_description = new_weather['weather_description']
+                locations.temperature = new_weather['temperature']
+                locations.tempmax = new_weather['tempmax']
+                locations.tempmin = new_weather['tempmin']
+                update_locations.append ({
+                    'id': locations.id,
+                    'city': locations.city,
+                    'time': locations.time,
+                    'icon': locations.icon,
+                    'weather_description': locations.weather_description,
+                    'temperature': locations.temperature,
+                    'tempmax': locations.tempmax,
+                    'tempmin': locations.tempmin
+                })
+        except Exception as e:
+            print(f"Error updating location {locations.city}: {e}")
+    try:
+        db.session.commit()
+    except Exception as e:
+        print(f"Error committing updates to databse: {e}")
+    
+    return update_locations
+
+                
 
 def get_location(city):
     params = {
@@ -92,61 +165,52 @@ def get_location(city):
                     return lat, lon
                 else:
                     print(f"Error: Incomplete data for {city}")
-                    return None
-            else:
-                print(f"Error: No location data found for {city}")
-                return None
-        else:
-            print(f"Status Code: {response.status_code}")
-            print(f"Response: {response.text}")
-            return None
+                    return None 
     except requests.exceptions.RequestException as e:
         print(f"Error: Failed to retrieve location data for {city} - {e}")
         return None
 
     
 def get_forecast(location, lat, lon):
-    params = {
-        'lat': lat,
-        'lon': lon,
-        'units': 'imperial',
-        'exclude': 'current,minutely,hourly,alerts',
-        'appid': API_KEY
-    }
-    response = requests.get(API7_URL, params=params)
-    
-    if response.status_code == 200:
-        data = response.json()
+        #otherwise fetch new data
+        params = {
+            'lat': lat,
+            'lon': lon,
+            'units': 'imperial',
+            'exclude': 'current,minutely,hourly,alerts',
+            'appid': API_KEY
+        }
+        response = requests.get(API7_URL, params=params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            week_data =[]
+            for day in data['daily'][:7]:
+                forecast_date = date.fromtimestamp(day['dt'])
+                formatted_time = datetime.fromtimestamp(day['dt']).strftime('%-I:%M %p')
+                forecast_day_name = calendar.day_name[forecast_date.weekday()]
+                #insert new entry
+                week_data.append({
+                    'city':location,
+                    'forecast_day': forecast_day_name,
+                    'forecast_symbol':day['weather'][0]['icon'],
+                    'forecast_name':day['weather'][0]['description'],
+                    'forecast_tempmax':int(day['temp']['max']),
+                    'forecast_tempmin':int(day['temp']['min']),
+                    'last_updated': formatted_time
+                })
+                    
 
-        # Save first 7 days' data to the database
-        for day in data['daily'][:7]:
-            forecast_date = date.fromtimestamp(day['dt'])
-            forecast_day_name = calendar.day_name[forecast_date.weekday()]
-            
-            existing_forecast = Forecast.query.filter_by(city=location, forecast_day=forecast_day_name).first()
-            if not existing_forecast:
-                new_forecast = Forecast(
-                    city=location,
-                    forecast_day=forecast_day_name,
-                    forecast_symbol=day['weather'][0]['icon'],
-                    forecast_name=day['weather'][0]['description'],
-                    forecast_tempmax=int(day['temp']['max']),
-                    forecast_tempmin=int(day['temp']['min'])
-                )
-                db.session.add(new_forecast)
+            try:
+                return week_data
+            except Exception as e:
+                print(f"Error returning data: {e}")
 
-        try:
-            db.session.commit()
-            return data
-        except Exception as e:
-            print(f"Error commmitting to the database: {e}")
-            db.session.rollback()
-
-    else:
-        print(f"Error: Unable to retrieve forecast data for {location}")
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.text}")
-        return None
+        else:
+            print(f"Error: Unable to retrieve forecast data for {location}")
+            print(f"Status Code: {response.status_code}")
+            print(f"Response: {response.text}")
+            return None
 
 def first_forecast(location, lat, lon):
     params = {
@@ -163,79 +227,77 @@ def first_forecast(location, lat, lon):
         # Return only the first day's data
         return data['daily'][0]
     else:
-        print(f"Error: Unable to retrieve forecast data for {location}")
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.text}")
         return None
 
 def get_hourly(location, lat, lon):
-    params = {
-        'lat': lat,
-        'lon': lon,
-        'units': 'imperial',
-        'exclude': 'current,minutely,daily,alerts',
-        'appid': API_KEY
-    }
-    response = requests.get(API7_URL, params=params)
-    
-    if response.status_code == 200:
-        data = response.json()
-
-        # Save first 24 hours' data to the database
-        for hour in data['hourly'][:24]:
-            forecast_time = datetime.fromtimestamp(hour['dt']).strftime('%-I:%M %p')
-            forecast_hour = forecast_time.replace(':00', '')
-            wind_deg = int(hour['wind_deg'])
-            # Determine the wind direction image
-            if 0 <= wind_deg <= 22.5:
-                wind_image = 'static/Images/north_arrow.png'  # Path to your north arrow image
-            elif 22.6 <= wind_deg <= 67.5:
-                wind_image = 'static/Images/northeast_arrow.png'   # Path to your east arrow image
-            elif 67.6 <= wind_deg <= 112.5:
-                wind_image = 'static/Images/east_arrow.png'  # Path to your south arrow image
-            elif 112.6 <= wind_deg <= 157.5:
-                wind_image = 'static/Images/southeast_arrow.png'   # Path to your west arrow image
-            elif 157.6 <= wind_deg < 202.5:
-                wind_image = 'static/Images/south_arrow.png' 
-            elif 202.6 <= wind_deg < 247.5:
-                wind_image = 'static/Images/southwest_arrow.png' 
-            elif 247.6 <= wind_deg < 292.5:
-                wind_image = 'static/Images/west_arrow.png' 
-            elif 292.6 <= wind_deg < 337.5:
-                wind_image = 'static/Images/northwest_arrow.png' 
-            elif 337.6 <= wind_deg < 360:
-                wind_image = 'static/Images/north_arrow.png' 
-            else:
-                wind_image = 'static/Images/north_arrow.png' # Fallback image
-            
-            existing_hourly = Hourly.query.filter_by(city=location, hourly_time=str(forecast_hour)).first()
-            if not existing_hourly:
-                new_hourly = Hourly(
-                    city=location,
-                    hourly_time=str(forecast_hour),
-                    hourly_symbol=hour['weather'][0]['icon'],
-                    hourly_name=hour['weather'][0]['description'],
-                    hourly_temp=int(hour['temp']),
-                    hourly_precipitation=int(hour['pop'] * 100),
-                    wind_speed=int(hour['wind_speed']),
-                    wind_deg=int(hour['wind_deg']),
-                    wind_symbol=wind_image
-                )
-                db.session.add(new_hourly)
-
-        try:
-            db.session.commit()
-            return data
-        except Exception as e:
-            print(f"Error commmitting to the database: {e}")
-            db.session.rollback()
+        params = {
+            'lat': lat,
+            'lon': lon,
+            'units': 'imperial',
+            'exclude': 'current,minutely,daily,alerts',
+            'appid': API_KEY
+        }
+        response = requests.get(API7_URL, params=params)
         
+        if response.status_code == 200:
+            data = response.json()
 
-    else:
-        print(f"Error: Unable to retrieve forecast data for {location}")
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.text}")
-        return None
+            # Save first 24 hours' data to the database
+            hourly_data = []
+            for hour in data['hourly'][:24]:
+                forecast_time = datetime.fromtimestamp(hour['dt']).strftime('%-I:%M %p')
+                forecast_hour = forecast_time.replace(':00', '')
+                wind_deg = int(hour['wind_deg'])
+                # Determine the wind direction image
+                if 0 <= wind_deg <= 22.5:
+                    wind_image = 'static/Images/north_arrow.png'  # Path to your north arrow image
+                elif 22.6 <= wind_deg <= 67.5:
+                    wind_image = 'static/Images/northeast_arrow.png'   # Path to your east arrow image
+                elif 67.6 <= wind_deg <= 112.5:
+                    wind_image = 'static/Images/east_arrow.png'  # Path to your south arrow image
+                elif 112.6 <= wind_deg <= 157.5:
+                    wind_image = 'static/Images/southeast_arrow.png'   # Path to your west arrow image
+                elif 157.6 <= wind_deg < 202.5:
+                    wind_image = 'static/Images/south_arrow.png' 
+                elif 202.6 <= wind_deg < 247.5:
+                    wind_image = 'static/Images/southwest_arrow.png' 
+                elif 247.6 <= wind_deg < 292.5:
+                    wind_image = 'static/Images/west_arrow.png' 
+                elif 292.6 <= wind_deg < 337.5:
+                    wind_image = 'static/Images/northwest_arrow.png' 
+                elif 337.6 <= wind_deg < 360:
+                    wind_image = 'static/Images/north_arrow.png' 
+                else:
+                    wind_image = 'static/Images/north_arrow.png' # Fallback image
+                
+                hourly_data.append({
+                    'city':location,
+                    'hourly_time':str(forecast_hour),
+                    'hourly_symbol':hour['weather'][0]['icon'],
+                    'hourly_name':hour['weather'][0]['description'],
+                    'hourly_temp':int(hour['temp']),
+                    'hourly_precipitation':int(hour['pop'] * 100),
+                    'wind_speed':int(hour['wind_speed']),
+                    'wind_deg':int(hour['wind_deg']),
+                    'wind_symbol':wind_image,
+                    'last_updated':forecast_time
+                })
+                    
+
+            try:
+                return hourly_data
+            except Exception as e:
+                print(f"Error returning data: {e}")
+            
+
+        else:
+            print(f"Error: Unable to retrieve forecast data for {location}")
+            print(f"Status Code: {response.status_code}")
+            print(f"Response: {response.text}")
+            return None
+
+ 
+    
 @app.route('/delete/<int:id>', methods=['DELETE'])
 def delete_location(id):
     try:
@@ -257,67 +319,63 @@ def index():
     if request.method == 'POST':
         data = request.get_json()
         location = data.get('location', '').strip().title()
-        existing_location = Location.query.filter_by(city=location).first()
+        current_weather = get_current(location)
 
-        if existing_location:
-            return jsonify({'success': False, 'message': "Error: location already exists"}), 400 
-        else:
-            location_data = get_location(location)
-            if location:
-                lat, lon = location_data 
-                current_weather_data = get_weather(location)
-
-                formatted_time = datetime.fromtimestamp(current_weather_data['dt']).strftime('%-I:%M %p')
-                
-                first_day = first_forecast(location, lat, lon)
-                if first_day:
-                    forecast_temp_max = int(first_day['temp']['max'])
-                    forecast_temp_min = int(first_day['temp']['min'])
-                
-
-                new_location = Location(
-                    city=location,
-                    time=formatted_time,
-                    icon=current_weather_data['weather'][0]['icon'], 
-                    weather_description=current_weather_data['weather'][0]['description'],  
-                    temperature=int(current_weather_data['main']['temp']),
-                    tempmax = forecast_temp_max,
-                    tempmin = forecast_temp_min 
-                )
-                db.session.add(new_location)
-                db.session.commit()
-
-                return jsonify ({
-                    'success': True,
-                    'id': new_location.id,
-                    'city': location,
-                    'time': formatted_time,
-                    'icon': current_weather_data['weather'][0]['icon'],
-                    'description': current_weather_data['weather'][0]['description'],
-                    'temperature': int(current_weather_data['main']['temp']),
-                    'tempmax': forecast_temp_max,
-                    'tempmin': forecast_temp_min
-                }), 201
+        if current_weather is None:
+            return jsonify({'error': 'Failed to retrieve weather data.'}), 400
+               
+        return jsonify ({
+                'success': True,
+                'id': current_weather['id'],
+                'city': current_weather['city'],
+                'time': current_weather['time'],
+                'icon': current_weather['icon'],
+                'weather_description': current_weather['weather_description'],
+                'temperature': current_weather['temperature'],
+                'tempmax': current_weather['tempmax'],
+                'tempmin': current_weather['tempmin'],
+        }), 200
+    
     else:
-        #query all locations to display on page 
         locations = Location.query.order_by(desc(Location.submission_time)).all()
         return render_template("index.html", locations=locations)
+
+@app.route('/update')
+def update_page():
+    updated_data = update_current()
+    if not updated_data:
+        return jsonify({'error': 'No locations were updated.'}), 400
+    return jsonify ({
+        'updated_data': updated_data
+    }), 200
+
 
 @app.route('/<location_name>')
 def location_page(location_name):
     location_data = get_location(location_name)
     if location_data:
-        lat, lon = location_data
-        get_forecast(location_name, lat, lon)
-        get_hourly(location_name, lat, lon)
-        forecast = Forecast.query.filter_by(city=location_name).all()
-        hourly = Hourly.query.filter_by(city=location_name).all()        
+        lat,lon = location_data
+        forecast_data = get_forecast(location_name, lat, lon)
+        hourly_data = get_hourly(location_name, lat, lon)
     else:
-        forecast = []
-        hourly = []
+        forecast_data = []
+        hourly_data = []
 
     location = Location.query.filter_by(city=location_name).all()
-    return render_template("location.html", location=location, forecast=forecast, hourly=hourly)
+    return render_template("location.html", location=location, forecast=forecast_data, hourly=hourly_data)
+
+@app.route('/api/<location_name>')
+def api_weather(location_name):
+    location_data = get_location(location_name)
+    
+    if location_data:
+        lat, lon = location_data
+        forecast_data = get_forecast(location_name, lat, lon)
+        hourly_data = get_hourly(location_name, lat, lon)
+        return jsonify(forecast=forecast_data, hourly=hourly_data)
+    
+    else:
+        return jsonify(error="Location not found"), 404
 
 if __name__ == "__main__":
     with app.app_context():
