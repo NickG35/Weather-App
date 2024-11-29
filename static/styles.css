@@ -1,19 +1,249 @@
 
-
+body {
+    background: linear-gradient(109.8deg, rgb(62, 5, 116) -5.2%, rgb(41, 14, 151) -5.2%, rgb(216, 68, 148) 103.3%);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    min-height: 100vh;
+}
 /* General styles applied to all screens */
 .title {
     text-align: center;
+    color: white;
+    padding: 5px;
 }
 
 .weather-block {
     border-top: none;
-    border: 1px solid lightgray;
+    border: .5px solid darkorchid;
 }
 
 .forecast-row {
     display: flex;
     align-items: center;
-    border-bottom: 1px solid lightgray;
+    border-bottom: .5px solid darkorchid;
+}
+
+#weather-icon {
+    width: 50px;
+}
+
+.weather-pic {
+    width: 50px;
+}
+
+.weather-block {
+    width: 100%;
+}
+
+.weather-desc {
+    width: 100px;
+    text-align: center;
+}
+
+.weather-temp {
+    padding: 10px;
+    width: 40px;
+}
+
+.forecast-row {
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.day-box {
+    width: 85px;
+    padding: 10px;
+}
+
+.hourly-block {
+    border: .5px solid darkorchid;
+    border-bottom: none;
+    display: flex;
+    overflow-x: auto;
+    width: 100%;
+    color: white;
+}
+
+.hourly-column {
+    border-right: .5px solid darkorchid;
+    display: flex;
+    flex-direction: column;
+    width: 20%;
+    padding: 10px;
+    text-align: center;
+    align-items: center;
+    font-size: 12px;
+}
+
+.tempMin {
+    color: lightgray;
+}
+
+.current-block {
+    display: flex;
+    justify-content: center;
+    color: white;
+    
+}
+
+
+.current-weather {
+    display: flex;
+}
+
+.left-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.right-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+#popLink, #windLink, #tempLink {
+    text-decoration: none;
+    color: white;
+}
+
+.nav-link:active {
+    color: white;
+}
+
+.nav-underline{
+    justify-content: center;
+    padding: 10px;
+}
+
+.all-current {
+    text-align: center;
+}
+
+.home-current {
+    display: flex;
+    justify-content: space-between;
+    border: .5px solid darkorchid;
+    border-radius: 2px;
+    padding: 10px;
+    min-width: 700px;
+}
+
+.home-block {
+    padding: 10px;
+    justify-items: center;
+    width: 100%;
+}
+
+.location-name {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    font-size: 25px;
+}
+
+.locationName {
+    background: none;
+    border: none;
+    text-align: left;
+    border-bottom: .5px solid darkorchid;
+    outline: none;
+    caret-color: white;
+    color: white;
+    padding: 5px;
+    width: 500px;
+    margin: 15px;
+}
+
+.locationName::placeholder {
+    color: white;
+}
+
+.locationName:focus {
+    border-color: #6c63ff; /* Optional: Highlight border color */
+    box-shadow: 0 0 8px rgba(108, 99, 255, 0.5); /* Subtle shadow effect */
+}
+
+.location-link {
+    text-decoration: none;
+    color: white;
+    display: block;
+}
+
+#submitbtn{
+    background: none;
+    border: none;
+}
+
+.temp-div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.search-form {
+    text-align: center;
+}
+
+.icon-div {
+    display: flex;
+    align-items: center;
+}
+
+.temps-div {
+    display: flex;
+    justify-content: center;
+}
+
+.dropdown-toggle {
+    border: none;
+    background-color: white;
+}
+
+#deleteButton {
+    text-align: center;
+    color: red;
+}
+
+.delete-form {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.deleteButton {
+    background: none;
+    display: flex;
+    border: none;
+    height: 10px;
+    justify-content: flex-end;
+}
+
+
+.big-desc {
+    color: white;
+}
+
+.big-icon {
+    width: 100px;
+}
+
+.big-temp {
+    font-size: 40px;
+}
+
+.mini-temp {
+    margin: 5px;
+    color: white;
+}
+
+.degree {
+    font-size: 20px;
 }
   
   /* Mobile Styles */
@@ -41,6 +271,7 @@
     }
 
     .forecast-row {
+        color: white;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -53,15 +284,16 @@
     }
 
     .hourly-block {
-        border: 1px solid lightgray;
+        border: .5px solid darkorchid;
         border-bottom: none;
         display: flex;
         overflow-x: auto;
         width: 100%;
+        color: white;
     }
 
     .hourly-column {
-        border-right: 1px solid lightgray;
+        border-right: .5px solid darkorchid;
         display: flex;
         flex-direction: column;
         width: 20%;
@@ -72,12 +304,13 @@
     }
 
     .tempMin {
-        color: gray;
+        color: lightgray;
     }
 
     .current-block {
         display: flex;
         justify-content: center;
+        color: white;
         
     }
 
@@ -100,11 +333,11 @@
 
     #popLink, #windLink, #tempLink {
         text-decoration: none;
-        color: black;
+        color: white;
     }
 
     .nav-link:active {
-        color: black;
+        color: white;
     }
 
     .nav-underline{
@@ -117,23 +350,36 @@
     }
 
     .home-current {
-        display: flex;
-        justify-content: space-between;
-        border: 1px solid lightgray;
-        border-radius: 2px;
+        min-width: 570px;
+        max-width: 570px;
+        padding: 5px;
+    }
+
+    .home-block {
+        justify-items: left;
+        padding: 5px;
     }
 
     .location-name {
         text-decoration: none;
-        color: black;
+        color: white;
         font-weight: bold;
         font-size: 25px;
     }
 
+    .locationName {
+        width: 300px;
+    }
+
     .location-link {
         text-decoration: none;
-        color: black;
+        color: white;
         display: block;
+    }
+
+    #submitbtn{
+        background: none;
+        border: none;
     }
 
     .temp-div {
@@ -172,7 +418,7 @@
     }
 
     .deleteButton {
-        background-color: white;
+        background: none;
         display: flex;
         border: none;
         height: 10px;
@@ -181,7 +427,7 @@
 
 
     .big-desc {
-        color: gray;
+        color: white;
     }
 
     .big-icon {
@@ -194,7 +440,7 @@
 
     .mini-temp {
         margin: 5px;
-        color: gray;
+        color: white;
     }
 
     .degree {
