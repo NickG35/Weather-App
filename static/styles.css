@@ -52,7 +52,7 @@ body {
 }
 
 .weather-desc {
-    width: 100px;
+    width: 300px;
     text-align: center;
 }
 
@@ -116,7 +116,7 @@ body {
     color: white;
 }
 .modal-content{
-    background: linear-gradient(89.7deg, rgb(0, 32, 95) 2.8%, rgb(132, 53, 142) 97.8%);
+    background: linear-gradient(179.4deg, rgb(12, 20, 69) -16.9%, rgb(71, 30, 84) 119.9%);
 }
 
 .modal-header {
@@ -134,6 +134,7 @@ body {
 
 .modal-elements {
     display: flex;
+    justify-content: space-evenly;
 }
 
 .element-title {
