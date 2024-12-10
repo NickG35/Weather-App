@@ -16,13 +16,27 @@ body {
 
 .weather-block {
     border-top: none;
-    border: .5px solid darkorchid;
+    background: rgba(255, 255, 255, 0.2); /* Light faded look */
+    max-width: 60%;
+    justify-self: center;
 }
 
 .forecast-row {
     display: flex;
     align-items: center;
-    border-bottom: .5px solid darkorchid;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.temp-values {
+    display: flex;
+}
+
+.temp-max, .temp-min {
+    margin: 5px;
+}
+
+.temp-min {
+    color: gray;
 }
 
 #weather-icon {
@@ -61,19 +75,75 @@ body {
 }
 
 .hourly-block {
-    border: .5px solid darkorchid;
-    border-bottom: none;
+    background: rgba(255, 255, 255, 0.2); /* Light faded look */
     display: flex;
-    overflow-x: auto;
-    width: 100%;
+    overflow: scroll;
+    scrollbar-color:gray transparent;
+    scrollbar-width: thin;
+    max-width: 60%;
+    min-width: 60%;
     color: white;
+    justify-self: center;
+    margin-bottom: 20px;
+}
+
+.top-row {
+     background: rgba(255, 255, 255, 0.2); /* Light faded look */
+     color: rgba(255, 255, 255, 0.2);
+     max-width: 60%;
+     min-width: 60%;
+     justify-self: center;
+     padding: 4px; 
+     display: flex;
+}
+
+
+.top-title {
+    color: solid rgba(255, 255, 255, 0.2);
+    align-items: center;
+}
+
+.title-top {
+    font-size: 14px;
+    padding: 3px;
+}
+
+.top-title, .top-symbol {
+    margin: 5px;
+}
+
+.modal-dialog {
+    color: white;
+}
+.modal-content{
+    background: linear-gradient(89.7deg, rgb(0, 32, 95) 2.8%, rgb(132, 53, 142) 97.8%);
+}
+
+.modal-header {
+    justify-content: center;
+}
+
+.modal-element {
+    border-radius: 5%;
+    justify-content: center;
+    text-align: center;
+    min-width: 150px;
+    margin: 10px;
+    background: rgba(0, 0, 0, 0.2); /* Dark faded look */
+}
+
+.modal-elements {
+    display: flex;
+}
+
+.element-title {
+    color: gray;
 }
 
 .hourly-column {
-    border-right: .5px solid darkorchid;
     display: flex;
     flex-direction: column;
-    width: 20%;
+    min-width: 10%;
     padding: 10px;
     text-align: center;
     align-items: center;
@@ -129,10 +199,11 @@ body {
 .home-current {
     display: flex;
     justify-content: space-between;
-    border: .5px solid darkorchid;
+    background: rgba(255, 255, 255, 0.2); /* Light faded look */
     border-radius: 2px;
     padding: 10px;
     min-width: 700px;
+    margin-bottom: 5px;
 }
 
 .home-block {
@@ -149,20 +220,21 @@ body {
 }
 
 .locationName {
-    background: none;
+    background: rgba(62, 5, 116, 0.7); /* 0.7 for slight opacity */
     border: none;
     text-align: left;
     border-bottom: .5px solid darkorchid;
     outline: none;
     caret-color: white;
-    color: white;
-    padding: 5px;
+    color: gray;
+    padding: 8px;
     width: 500px;
     margin: 15px;
+    border-radius: 8px;
 }
 
 .locationName::placeholder {
-    color: white;
+    color: gray;
 }
 
 .locationName:focus {
@@ -257,7 +329,7 @@ body {
     }
 
     .weather-block {
-        width: 100%;
+        max-width: 100%;
     }
 
     .weather-desc {
@@ -288,19 +360,12 @@ body {
         border-bottom: none;
         display: flex;
         overflow-x: auto;
-        width: 100%;
+        max-width: 100%;
         color: white;
     }
 
     .hourly-column {
-        border-right: .5px solid darkorchid;
-        display: flex;
-        flex-direction: column;
-        width: 20%;
-        padding: 10px;
-        text-align: center;
-        align-items: center;
-        font-size: 12px;
+        min-width: 14%;
     }
 
     .tempMin {
