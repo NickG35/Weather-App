@@ -114,6 +114,14 @@
                 <a id="windLink" class="nav-link" href="#">Wind</a>
             </li>
         </ul>
+        <div class="top-row">
+            <div class="top-symbol">
+                <i class="fa-regular fa-clock" style="color: rgba(255, 255, 255, 0.2);"></i>
+            </div>
+            <div class="top-title">
+                <p class="title-top">HOURLY FORECAST</p>
+            </div>
+        </div>
         <div class="hourly-block">
             {% if hourly %}
                 {% for hour in hourly %}
@@ -131,11 +139,18 @@
                 <p>No hourly data available.</p>
             {% endif %}
         </div>
-
+<div class="top-row">
+    <div class="top-symbol">
+        <i class="fa-regular fa-calendar-days" style="color: rgba(255, 255, 255, 0.2);"></i>
+    </div>
+    <div class="top-title">
+        <p class="title-top">7-DAY FORECAST</p>
+    </div>
+</div>
 <div class="weather-block">
         {% if forecast %}
             {% for fore in forecast %}
-                <div class="forecast-row">
+                <div data-bs-toggle="modal" data-bs-target="#modal_{{fore.forecast_day}}" class="forecast-row">
                     <div class="day-box">
                         <p><b>{{ fore.forecast_day }}</b></p>
                     </div>
@@ -150,6 +165,44 @@
                         <p class="tempMin">{{ fore.forecast_tempmin }}°</p>
                     </div>
                 </div>
+                <div id="modal_{{fore.forecast_day}}" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">{{ fore.forecast_day }}, {{ fore.forecast_date }}</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="temp-values">
+                                <img id="weather-icon" src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
+                                <p class="temp-max">{{ fore.forecast_tempmax }}°</p>
+                                <p class="temp-min">{{ fore.forecast_tempmin }}°</p>
+                            </div>
+                            <div class="daily-summary">
+                                <p>Daily Summary</p>
+                                <p><span>{{ fore.forecast_day }}</span>'s weather will have a low of <span>{{ fore.forecast_tempmin }}°</span> and a high of <span>{{ fore.forecast_tempmax }}°</span> and will consist of <span>{{ fore.forecast_name }}</span></p>
+                            </div>
+                            <div class="modal-elements">
+                                <div class="modal-element">
+                                    <p class="element-title">PRESSURE</p>
+                                    <p>{{ fore.pressure }} inHg</p>
+                                </div>
+                                <div class="modal-element">
+                                    <p class="element-title">HUMIDITY</p>
+                                    <p>{{ fore.humidity }} %</p>
+                                </div>
+                                <div class="modal-element">
+                                    <p class="element-title">PRECIPITATION</p>
+                                    <p>{{ fore.precipitation }} %</p>
+                                </div>
+                                <div class="modal-element">
+                                    <p class="element-title">RAINFALL</p>
+                                    <p>{{ fore.rainfall }} mm</p>
+                                </div>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
             {% endfor %}
         {% else %}
             <p>No forecast data available</p>
