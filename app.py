@@ -187,17 +187,22 @@ def get_forecast(location, lat, lon):
             week_data =[]
             for day in data['daily'][:7]:
                 forecast_date = date.fromtimestamp(day['dt'])
-                formatted_time = datetime.fromtimestamp(day['dt']).strftime('%-I:%M %p')
+                formatted_date = forecast_date.strftime('%B %d, %Y')
                 forecast_day_name = calendar.day_name[forecast_date.weekday()]
+                rainfall = int(day.get('rain', 0))
                 #insert new entry
                 week_data.append({
                     'city':location,
                     'forecast_day': forecast_day_name,
+                    'forecast_date': formatted_date,
                     'forecast_symbol':day['weather'][0]['icon'],
                     'forecast_name':day['weather'][0]['description'],
                     'forecast_tempmax':int(day['temp']['max']),
                     'forecast_tempmin':int(day['temp']['min']),
-                    'last_updated': formatted_time
+                    'pressure':round(day['pressure'] * 0.02953, 2),
+                    'humidity':int(day['humidity']),
+                    'precipitation':int(day['pop'] * 100),
+                    'rainfall': rainfall
                 })
                     
 
