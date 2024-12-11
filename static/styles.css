@@ -19,6 +19,8 @@ body {
     background: rgba(255, 255, 255, 0.2); /* Light faded look */
     max-width: 60%;
     justify-self: center;
+    border-bottom-left-radius: 15px; 
+    border-bottom-right-radius: 15px;
 }
 
 .forecast-row {
@@ -33,6 +35,7 @@ body {
 
 .temp-max, .temp-min {
     margin: 5px;
+    font-size: 24px;
 }
 
 .temp-min {
@@ -41,6 +44,10 @@ body {
 
 #weather-icon {
     width: 50px;
+}
+
+#modal-icon {
+    width: 150px;
 }
 
 .weather-pic {
@@ -84,7 +91,8 @@ body {
     min-width: 60%;
     color: white;
     justify-self: center;
-    margin-bottom: 20px;
+    border-bottom-left-radius: 15px; 
+    border-bottom-right-radius: 15px;
 }
 
 .top-row {
@@ -95,6 +103,9 @@ body {
      justify-self: center;
      padding: 4px; 
      display: flex;
+     border-top-left-radius:15px; 
+     border-top-right-radius: 15px;
+     margin-top: 20px;
 }
 
 
@@ -132,9 +143,32 @@ body {
     background: rgba(0, 0, 0, 0.2); /* Dark faded look */
 }
 
+.modal-upper {
+    display: flex;
+    justify-self: center;
+}
+
+.temps-div {
+    align-items: center;
+}
+
 .modal-elements {
     display: flex;
     justify-content: space-evenly;
+}
+
+.daily-summary {
+    margin: 35px 30px;
+}
+
+.daily-description {
+    background: rgba(0, 0, 0, 0.2); /* Dark faded look */
+    padding: 10px 5px;
+    width: 700px;
+}
+.daily-desc{
+    padding: 5px 10px;
+    margin-left: 15px;
 }
 
 .element-title {
