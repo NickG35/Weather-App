@@ -172,10 +172,14 @@
                             <h5 class="modal-title">{{ fore.forecast_day }}, {{ fore.forecast_date }}</h5>
                         </div>
                         <div class="modal-body">
-                            <div class="temp-values">
-                                <img id="weather-icon" src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
-                                <p class="temp-max">{{ fore.forecast_tempmax }}°</p>
-                                <p class="temp-min">{{ fore.forecast_tempmin }}°</p>
+                            <div class="modal-upper">
+                                <div class="pic-div">
+                                    <img id="modal-icon" src="https://openweathermap.org/img/wn/{{ fore.forecast_symbol }}@2x.png" alt="Weather Icon">
+                                </div>
+                                <div class="temps-div">
+                                    <p class="temp-max">{{ fore.forecast_tempmax }}°</p>
+                                    <p class="temp-min">{{ fore.forecast_tempmin }}°</p>
+                                </div>
                             </div>
                             <div class="modal-elements">
                                 <div class="modal-element">
@@ -201,7 +205,9 @@
                             </div>
                             <div class="daily-summary">
                                 <p>Daily Summary</p>
-                                <p><span>{{ fore.forecast_day }}</span>'s weather will have a low of <span>{{ fore.forecast_tempmin }}°</span> and a high of <span>{{ fore.forecast_tempmax }}°</span> and will consist of <span>{{ fore.forecast_name }}</span></p>
+                                <div class="daily-description">
+                                    <p class="daily-desc"><span>{{ fore.forecast_day }}</span>'s weather will have a low of <span>{{ fore.forecast_tempmin }}°</span> and a high of <span>{{ fore.forecast_tempmax }}°</span> and will consist of <span>{{ fore.forecast_name }}.</span></p>
+                                </div>
                             </div>
                         </div>
                       </div>
