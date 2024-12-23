@@ -14,6 +14,36 @@ body {
     padding: 5px;
 }
 
+.locationDiv {
+    visibility: hidden;
+}
+
+.spinner-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1050;
+}
+
+.spinner-border {
+    color: white;
+}
+
+.wind-div {
+    justify-self: center;
+    justify-content: center;
+}
+
+#wind_symbol {
+    color: gray;
+    width: 30px;
+}
+
+.no_locations {
+    color: white;
+}
+
 .weather-block {
     border-top: none;
     background: rgba(255, 255, 255, 0.2); /* Light faded look */
@@ -34,14 +64,44 @@ body {
     display: flex;
 }
 
+.updated-time {
+    display: flex;
+    justify-self: center;
+    color: gray;
+    font-size: 14px;
+}
+
+.temp-reg {
+    font-size: 30px;
+}
+
+.reg-temp{
+    margin-top: auto;
+}
+
+.reg-temp, .temp-extremes {
+    text-align: center;
+}
+
 .temp-max, .temp-min {
     margin: 5px;
     font-size: 24px;
 }
 
-.temp-min {
+.temp_max, .temp_min {
+    margin: 5px;
+    font-size: 14px;
+}
+
+.temp-extremes {
+    display: flex;
+}
+
+.temp-min, .temp_min {
     color: gray;
 }
+
+
 
 #weather-icon {
     width: 50px;
@@ -49,6 +109,12 @@ body {
 
 #modal-icon {
     width: 150px;
+}
+
+.modal-elements {
+    max-width: 100%;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .weather-pic {
@@ -139,7 +205,8 @@ body {
     border-radius: 5%;
     justify-content: center;
     text-align: center;
-    min-width: 150px;
+    min-width: 140px;
+    min-height: 140px;
     margin: 10px;
     background: rgba(0, 0, 0, 0.2); /* Dark faded look */
 }
@@ -147,9 +214,6 @@ body {
 .modal-upper {
     display: flex;
     justify-self: center;
-}
-
-.temps-div {
     align-items: center;
 }
 
@@ -166,6 +230,7 @@ body {
     background: rgba(0, 0, 0, 0.2); /* Dark faded look */
     padding: 10px 5px;
     width: 700px;
+    border-radius: 10px;
 }
 .daily-desc{
     padding: 5px 10px;
@@ -239,7 +304,7 @@ body {
     border-radius: 15px;
     padding: 10px;
     min-width: 700px;
-    margin-bottom: 5px;
+    margin-bottom: 15px;
 }
 
 .home-block {
@@ -307,6 +372,11 @@ body {
 .temps-div {
     display: flex;
     justify-content: center;
+}
+
+.temps_div {
+    justify-content: center;
+    margin-top: 15px;
 }
 
 .dropdown-toggle {
