@@ -31,7 +31,16 @@ class Location(db.Model):
     icon = db.Column(db.String(5))
     tempmax = db.Column(db.Integer, nullable=True)
     tempmin = db.Column(db.Integer, nullable=True)
-    submission_time = db.Column(db.DateTime, default=datetime.now)
+    sunrise = db.Column(db.String(50), nullable=True)
+    sunset = db.Column(db.String(50), nullable=True)
+    wind_speed = db.Column(db.Integer, nullable=True)
+    wind_deg = db.Column(db.Integer, nullable=True)
+    rainfall = db.Column(db.Integer, nullable=True)
+    feels_like = db.Column(db.Integer, nullable=True)
+    humidity = db.Column(db.Integer, nullable=True)
+    visibility = db.Column(db.Integer, nullable=True)
+    pressure = db.Column(db.Integer, nullable=True)
+    submission_time = db.Column(db.String(50), default=datetime.now)
 
 class Forecast(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,37 +76,44 @@ def get_current(location):
         data = response.json()
         if data:
             formatted_time = datetime.fromtimestamp(data['dt']).strftime('%-I:%M %p')
+            formatted_sunrise = datetime.fromtimestamp(data['sys']['sunrise']).strftime('%-I:%M')
+            formatted_sunset = datetime.fromtimestamp(data['sys']['sunset']).strftime('%-I:%M')
+            formatted_submission = datetime.now().strftime('%-I:%M %p')
             coordinates = get_location(location)
             lat, lon = coordinates
             first_day = first_forecast(location, lat, lon)
             forecast_temp_max = int(first_day['temp']['max'])
             forecast_temp_min = int(first_day['temp']['min'])
 
+            # Existing or new location
             existing_location = Location.query.filter_by(city=location).first()
-            if existing_location:
-                existing_location.time = formatted_time
-                existing_location.icon = data['weather'][0]['icon']
-                existing_location.weather_description = data['weather'][0]['description']
-                existing_location.temperature = int(data['main']['temp'])
-                existing_location.tempmax = forecast_temp_max
-                existing_location.tempmin = forecast_temp_min
-            else:
-                new_location = Location(
-                    city = location,
-                    time = formatted_time,
-                    icon = data['weather'][0]['icon'], 
-                    weather_description = data['weather'][0]['description'],  
-                    temperature = int(data['main']['temp']),
-                    tempmax = forecast_temp_max,
-                    tempmin = forecast_temp_min
-                )
+            location_obj = existing_location or Location(city=location)
 
-                db.session.add(new_location)
-        
+            # Update or set fields
+            location_obj.time = formatted_time
+            location_obj.icon = data['weather'][0]['icon']
+            location_obj.weather_description = data['weather'][0]['description']
+            location_obj.temperature = int(data['main']['temp'])
+            location_obj.tempmax = forecast_temp_max
+            location_obj.tempmin = forecast_temp_min
+            location_obj.sunrise = formatted_sunrise
+            location_obj.sunset = formatted_sunset
+            location_obj.wind_speed = int(data['wind']['speed'])
+            location_obj.wind_deg = int(data['wind']['deg'])
+            location_obj.rainfall = int(data.get('rain', {}).get('1h', 0))  # Safely handle missing 'rain' key
+            location_obj.feels_like = int(data['main']['feels_like'])
+            location_obj.humidity = int(data['main']['humidity'])
+            location_obj.visibility = round(data['visibility'] * 0.000621371)
+            location_obj.pressure = round(data['main']['pressure'] * 0.02953, 2)
+            location_obj.submission_time = formatted_submission
+
+            if not existing_location:
+                db.session.add(location_obj)
+
             db.session.commit()
-            locationObj = existing_location or new_location
+
             return {
-                'id': locationObj.id,
+                'id': location_obj.id,
                 'city': location,
                 'time': formatted_time,
                 'icon': data['weather'][0]['icon'],
@@ -105,6 +121,16 @@ def get_current(location):
                 'temperature': int(data['main']['temp']),
                 'tempmax': forecast_temp_max,
                 'tempmin': forecast_temp_min,
+                'sunrise' : formatted_sunrise,
+                'sunset' : formatted_sunset,
+                'wind_speed': int(data['wind']['speed']),
+                'wind_deg': int(data['wind']['deg']),
+                'rainfall': int(data.get('rain', {}).get('1h', 0)),  # Safely handle missing 'rain' key
+                'feels_like' : int(data['main']['feels_like']),
+                'humidity' : int(data['main']['humidity']),
+                'visibility' : round(data['visibility'] * 0.000621371),
+                'pressure' : round(data['main']['pressure'] * 0.02953, 2),
+                'submission_time': formatted_submission
             }
      
     except requests.exceptions.RequestException as e:
@@ -127,6 +153,16 @@ def update_current():
                 locations.temperature = new_weather['temperature']
                 locations.tempmax = new_weather['tempmax']
                 locations.tempmin = new_weather['tempmin']
+                locations.sunrise = new_weather['sunrise']
+                locations.sunset = new_weather['sunset']
+                locations.wind_speed = new_weather['wind_speed']
+                locations.wind_deg = new_weather['wind_deg']
+                locations.rainfall = new_weather['rainfall']
+                locations.feels_like = new_weather['feels_like']
+                locations.humidity = new_weather['humidity']
+                locations.visibility = new_weather['visibility']
+                locations.pressure = new_weather['pressure']
+                locations.submission_time = new_weather['submission_time']
                 update_locations.append ({
                     'id': locations.id,
                     'city': locations.city,
@@ -135,7 +171,17 @@ def update_current():
                     'weather_description': locations.weather_description,
                     'temperature': locations.temperature,
                     'tempmax': locations.tempmax,
-                    'tempmin': locations.tempmin
+                    'tempmin': locations.tempmin,
+                    'sunrise': locations.sunrise, 
+                    'sunset': locations.sunset, 
+                    'wind_speed': locations.wind_speed,
+                    'wind_deg': locations.wind_deg, 
+                    'rainfall': locations.rainfall, 
+                    'feels_like': locations.feels_like,
+                    'humidity': locations.humidity,
+                    'visibility': locations.visibility,
+                    'pressure': locations.pressure,
+                    'submission_time': locations.submission_time
                 })
         except Exception as e:
             print(f"Error updating location {locations.city}: {e}")
