@@ -2,6 +2,36 @@
 
 {% block body %}
 <script>
+    
+    function showMessage() {
+        const noLocations = document.querySelector('.no_locations');
+        if (noLocations) {
+            console.log('show message');
+            noLocations.style.visibility = 'visible';
+        } else {
+            console.error('showMessage: .no_locations not found');
+        }
+    }
+
+    function hideMessage() {
+        const noLocations = document.querySelector('.no_locations');
+        if (noLocations) {
+            console.log('hide message');
+            noLocations.style.visibility = 'hidden';
+        } else {
+            console.error('hideMessage: .no_locations not found');
+        }
+    }
+
+    function updateMessage() {
+        const locationsDiv = document.querySelectorAll('.home-current');
+        if (locationsDiv.length === 0) {
+            showMessage();
+        } else {
+            hideMessage();
+        }
+    }
+
     async function deleteLocation(locationID) {
         try {
             const response = await fetch(`/delete/${locationID}`, {
@@ -15,8 +45,8 @@
                 if (box){
                     box.remove();
                 }
-                const cityName = box.getAttribute('data-name');
                 console.log('Location deleted successfully');
+                updateMessage();
             } else {
                 console.log('Failed to delete location: ' + data.message);
             }
@@ -84,7 +114,6 @@
                         </ul>
                     </div>
                 `;
-                
                 const deleteButtons = document.querySelectorAll('.delete-button');
                 deleteButtons.forEach(button => {
                     button.addEventListener('click', function (event){
@@ -93,6 +122,7 @@
                         deleteLocation(locationID);
                     })
                 })
+                updateMessage();
             } else {
                 console.log('Failed to find location: ' + data.message);
             }
@@ -173,33 +203,114 @@
 
         setInterval(updateLocation, 1800000);
 
+    
+    let debounceTimer;
+    let fetchController;
+
     document.addEventListener('DOMContentLoaded', function () {
         const deleteButtons = document.querySelectorAll('.delete-button');
         deleteButtons.forEach(button => {
             button.addEventListener('click', function (event) {
                 event.preventDefault(); // Prevent the default anchor behavior
                 const locationID = this.getAttribute('data-id');
-                deleteLocation(locationID);
+                deleteLocation(locationID)
             });
         });
+        document.querySelector('.locationName').addEventListener('input', async function(){
+            const query = this.value.trim();
+            const results = document.getElementById('resultsContainer');
+
+            if (fetchController) {
+                fetchController.abort();
+            }
+
+            fetchController = new AbortController();
+            const signal = fetchController.signal
+
+            if(!query) {
+                clearTimeout(debounceTimer);
+                results.innerHTML = 'No cities to display'; // Clear previous results
+                return; // Exit early if query is empty
+            }
+
+            // clear previous debounce timer
+            clearTimeout(debounceTimer);
+            // set new debounce timer
+            debounceTimer = setTimeout(async function(){
+
+                try {
+                    const response = await fetch(`/search_results?query=${encodeURIComponent(query)}`, { signal });
+                    const data = await response.json();
+                    results.innerHTML = '';
+
+                    if(data.city_names && data.city_names.length > 0) {
+                        data.city_names.forEach(city => {
+                            const cityResult = document.createElement('div');
+                            cityResult.textContent = city;
+                            cityResult.className = 'searchResults';
+                            // Add click event listener to each result
+                            cityResult.addEventListener('click', function() {
+                                const searchInput = document.querySelector('.locationName');
+                                searchInput.value = city;
+                                createLocation();
+                                searchInput.value = '';
+                                results.style.display = 'none';
+                                results.innerHTML = 'No cities to display';
+                            });
+                            results.appendChild(cityResult); 
+                            
+                        });
+                    } else {
+                        results.innerHTML = 'No cities found';
+                    }
+                } catch(error){
+                    if (error.name === 'AbortError') {
+                        console.log('Fetch aborted for query: ', query);
+                    } else {
+                        console.error('Error fetching cities', error)
+                    }
+                }
+            }, 300); // Debounce delay
+        });
+
         const searchForm = document.querySelector('.locationForm');
+        const searchInput = document.querySelector('.locationName');
+        const resultsContainer = document.querySelector('#resultsContainer');
+        searchInput.addEventListener("focus", function(){
+            resultsContainer.style.display = "block";
+        }); 
+        searchInput.addEventListener("blur", function(){
+            setTimeout(() => {
+                resultsContainer.style.display = 'none';
+            }, 200);
+        }); 
         searchForm.addEventListener('submit', function(event){
             event.preventDefault();
             createLocation();
-            const new_date = new Date();
-            console.log(new_date);
+            resultsContainer.style.display = "none";
+            resultsContainer.innerHTML = "No cities to display";
+            searchInput.blur();
         })
-        updateLocation()
+
+        updateLocation();
+        updateMessage();
+       
     });
 </script>
-    <div class="search-form">
-        <form action="/" method="post" class="locationForm">
-            <input name="location" class="locationName" placeholder="search location">
-            <button id="submitbtn"><i class="fa-solid fa-magnifying-glass" style="color: #ffffff;"></i></button>
-        </form>
+    <div class="search-block">
+        <div class="search-form">
+            <form action="/" method="post" class="locationForm">
+                <input name="location" class="locationName" placeholder="search location">
+                <button id="submitbtn"><i class="fa-solid fa-magnifying-glass" style="color: #ffffff;"></i></button>
+            </form>
+        </div>
+        <div class="dropdown">
+            <ul id="resultsContainer" class="dropdown-menu show">
+                <li>No cities to display</li>
+            </ul>
+        </div>
     </div>
     <div class="home-block">
-        {% if locations %}
         {% for location in locations %}
         <a href="{{ url_for('location_page', location_name=location.city) }}" class="location-link">
             <div id='box{{location.id}}' data-name="{{ location.city }}" class="home-current">
@@ -231,8 +342,6 @@
             </div>
         </a>
         {% endfor %}
-        {% else %}
-            <p> No locations to display</p>
-        {% endif %}
+        <p class="no_locations"> No locations to display</p>
     </div>
 {% endblock %}
