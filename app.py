@@ -4,7 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func, desc
 from flask_migrate import Migrate
 from datetime import datetime, timezone, date, timedelta
-import calendar
+import calendar 
+import json
+import os
 
 
 app = Flask(__name__)
@@ -65,6 +67,40 @@ class Hourly(db.Model):
     wind_symbol = db.Column(db.String(50), nullable=False)
     last_updated = db.Column(db.DateTime, default=datetime.now)
 
+@app.route('/search_results', methods=['GET'])
+def search_results():
+    query = request.args.get('query', '').lower()
+
+    # If query is empty, return no results
+    if not query:
+        return jsonify({'city_names': []})  # No cities to return
+    
+    try:
+        file_path = os.path.join(os.path.dirname(__file__), "current.city.list.json")
+        with open(file_path, "r", encoding="utf-8") as file:
+            cities = json.load(file)
+
+        # Separate prefix matches and substring matches
+        prefix_matches = [city["name"] for city in cities if city["name"].lower().startswith(query)]
+        substring_matches = [city["name"] for city in cities if query in city["name"].lower() and city["name"] not in prefix_matches]
+
+        # Combine, prioritizing prefix matches
+        all_matches = prefix_matches + substring_matches
+
+        # Limit results to 10
+        limited_cities = all_matches[:10]
+
+        return jsonify({
+            'city_names': limited_cities
+        })
+    
+    except FileNotFoundError:
+        return jsonify({'error': 'City list file not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
 def get_current(location):
     params = {
         'q': location,
@@ -78,7 +114,6 @@ def get_current(location):
             formatted_time = datetime.fromtimestamp(data['dt']).strftime('%-I:%M %p')
             formatted_sunrise = datetime.fromtimestamp(data['sys']['sunrise']).strftime('%-I:%M')
             formatted_sunset = datetime.fromtimestamp(data['sys']['sunset']).strftime('%-I:%M')
-            formatted_submission = datetime.now().strftime('%-I:%M %p')
             coordinates = get_location(location)
             lat, lon = coordinates
             first_day = first_forecast(location, lat, lon)
@@ -105,7 +140,7 @@ def get_current(location):
             location_obj.humidity = int(data['main']['humidity'])
             location_obj.visibility = round(data['visibility'] * 0.000621371)
             location_obj.pressure = round(data['main']['pressure'] * 0.02953, 2)
-            location_obj.submission_time = formatted_submission
+            location_obj.submission_time = datetime.now()
 
             if not existing_location:
                 db.session.add(location_obj)
@@ -130,7 +165,7 @@ def get_current(location):
                 'humidity' : int(data['main']['humidity']),
                 'visibility' : round(data['visibility'] * 0.000621371),
                 'pressure' : round(data['main']['pressure'] * 0.02953, 2),
-                'submission_time': formatted_submission
+                'submission_time': datetime.now()
             }
      
     except requests.exceptions.RequestException as e:
@@ -139,6 +174,59 @@ def get_current(location):
         print(f"Error committing to the database: {e}")
         db.session.rollback()
     return None
+
+def update_location(location):
+    existing_location = Location.query.filter_by(city=location).all()
+    update_locations = []
+    for location in existing_location:
+        try:
+            new_weather = get_current(location.city)
+            if new_weather:
+                location.time = new_weather['time']
+                location.icon = new_weather['icon']
+                location.weather_description = new_weather['weather_description']
+                location.temperature = new_weather['temperature']
+                location.tempmax = new_weather['tempmax']
+                location.tempmin = new_weather['tempmin']
+                location.sunrise = new_weather['sunrise']
+                location.sunset = new_weather['sunset']
+                location.wind_speed = new_weather['wind_speed']
+                location.wind_deg = new_weather['wind_deg']
+                location.rainfall = new_weather['rainfall']
+                location.feels_like = new_weather['feels_like']
+                location.humidity = new_weather['humidity']
+                location.visibility = new_weather['visibility']
+                location.pressure = new_weather['pressure']
+                location.submission_time = new_weather['submission_time']
+                update_locations.append ({
+                    'id': location.id,
+                    'city': location.city,
+                    'time': location.time,
+                    'icon': location.icon,
+                    'weather_description': location.weather_description,
+                    'temperature': location.temperature,
+                    'tempmax': location.tempmax,
+                    'tempmin': location.tempmin,
+                    'sunrise': location.sunrise, 
+                    'sunset': location.sunset, 
+                    'wind_speed': location.wind_speed,
+                    'wind_deg': location.wind_deg, 
+                    'rainfall': location.rainfall, 
+                    'feels_like': location.feels_like,
+                    'humidity': location.humidity,
+                    'visibility': location.visibility,
+                    'pressure': location.pressure,
+                    'submission_time': location.submission_time
+                })
+        except Exception as e:
+            print(f"Error updating location {location.city}: {e}")
+    try:
+        db.session.commit()
+    except Exception as e:
+        print(f"Error committing updates to databse: {e}")
+    
+    return update_locations
+
 
 def update_current():
     existing_locations = Location.query.all()
@@ -390,6 +478,15 @@ def index():
     else:
         locations = Location.query.order_by(desc(Location.submission_time)).all()
         return render_template("index.html", locations=locations)
+    
+@app.route('/update/<location_name>')
+def update_locpage(location_name):
+    updated_location = update_location(location_name)
+    if not updated_location:
+         return jsonify({'error': 'Location was not updated.'}), 400
+    return jsonify({
+        'updated_data': updated_location
+    }), 200 
 
 @app.route('/update')
 def update_page():
@@ -399,7 +496,6 @@ def update_page():
     return jsonify ({
         'updated_data': updated_data
     }), 200
-
 
 @app.route('/<location_name>')
 def location_page(location_name):
