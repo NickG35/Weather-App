@@ -15,9 +15,9 @@
             }
         }
 
-         async function updateLocation(){
+        async function updateLocation(location){
             try{
-                const response = await fetch('/update');
+                const response = await fetch(`/update/${location}`);
                 const data = await response.json();
 
                 if (!response.ok) {
@@ -25,12 +25,11 @@
                     return;
                 }
 
-                console.log('locations updated')
+                console.log(`${location} updated`)
                 let updatedWeather = data.updated_data
                 updatedWeather.forEach(location => {
                     let wind_symbol = document.querySelector(`.wind-symbol_${location.id}`);
                     let wind_deg = location.wind_deg;
-                    console.log(`Updating wind symbol for location: ${location.id}, wind direction: ${wind_deg}`);
                     if (wind_symbol){
                         let svg = '';
                         if (wind_deg >= 0 && wind_deg <= 22.5){
@@ -173,8 +172,9 @@
     document.addEventListener("DOMContentLoaded", async function() {  
         const spinner = document.querySelector('.spinner-border');
         const locationBody = document.querySelector('.locationDiv');
+        const location = document.querySelector('.big-icon').getAttribute('data-city');
         try {
-            await updateLocation();
+            await updateLocation(location);
             console.log('Data successfully loaded');
         } catch (error) {
             console.error('Error loading data:', error);
@@ -245,7 +245,6 @@
             removeActiveClasses();
             windTab.classList.add('nav-link', 'active');
         });
-        const location = document.querySelector('.big-icon').getAttribute('data-city');
         fetchWeather(location);
     });
 </script>
