@@ -47,13 +47,6 @@ body {
     color: white;
 }
 
-#dropdownItem {
-    color: white
-}
-
-#dropdownItem:hover {
-    background: rgba(0, 0, 0, 0.2);
-}
 
 .searchResult {
     border: 1px solid;
@@ -145,7 +138,7 @@ body {
 
 
 #weather-icon {
-    width: 50px;
+    width: 65px;
 }
  .modal-content{
     border: 1px solid;
@@ -196,10 +189,22 @@ body {
     padding: 10px;
 }
 
+.hourly_time {
+    font-size: 14px;
+}
+
+.hourTemp, .hourPop, .hourWind {
+    font-size: 14px;
+}
+
+.day-box, .weather-desc, .weather-temp {
+    font-size: 16px;
+}
+
 .hourly-block {
     background: rgba(255, 255, 255, 0.2); /* Light faded look */
     display: flex;
-    overflow: scroll;
+    overflow-x: scroll;
     scrollbar-color:gray transparent;
     scrollbar-width: thin;
     max-width: 60%;
@@ -314,6 +319,10 @@ body {
     color: lightgray;
 }
 
+#tempmin {
+    color: lightgray;
+}
+
 .current-block {
     display: flex;
     justify-content: center;
@@ -330,6 +339,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    padding: 15px;
 }
 
 .right-div {
@@ -362,14 +372,15 @@ body {
     background: rgba(255, 255, 255, 0.2); /* Light faded look */
     border-radius: 15px;
     padding: 10px;
-    min-width: 700px;
+    min-width:560px;
     margin-bottom: 15px;
 }
 
 .home-block {
     padding: 10px;
     justify-items: center;
-    width: 100%;
+    min-width: 100%;
+    padding: 25px;
 }
 
 .location-name {
@@ -386,7 +397,7 @@ body {
     border-bottom: .5px solid darkorchid;
     outline: none;
     caret-color: white;
-    color: gray;
+    color: white;
     padding: 8px;
     width: 500px;
     border-radius: 8px;
@@ -418,6 +429,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    margin-top: 15px;
+    margin-right: 15px;
 }
 
 .search-form {
@@ -440,14 +453,19 @@ body {
     margin-top: 15px;
 }
 
-.dropdown-toggle {
-    border: none;
-    background-color: white;
-}
-
 #deleteButton {
     text-align: center;
     color: red;
+}
+
+#menuDrop {
+    background-color: rgba(0, 0, 0, 0.2);
+    position: right;
+    padding: 0;
+    max-width: 50px;
+    min-width: 50px;
+    justify-content: center;
+    border: 1px solid;
 }
 
 .delete-form {
@@ -468,8 +486,17 @@ body {
     color: white;
 }
 
+#location-desc {
+    font-size: 18px;
+}
+
+#location-time {
+    font-size: 14px;
+    color: lightgray;
+}
+
 .big-icon {
-    width: 100px;
+    width: 110px;
 }
 
 .big-temp {
@@ -486,11 +513,17 @@ body {
 }
   
   /* Mobile Styles */
-  @media (max-width: 575.99px) {
+  @media (max-width: 767.99px) {
 
     .top-row {
         max-width: 80%;
         min-width: 80%;
+    }
+
+    #resultsContainer {
+        width: 260px;
+        left: 50%;
+        transform: translateX(-50%);
     }
 
     .weather-desc {
@@ -523,7 +556,7 @@ body {
 
     .modal-content{
         border: 1px solid;
-        max-height: 500px;
+        max-height: 800px;
         overflow-y: scroll;
         scrollbar-color:gray transparent;
         scrollbar-width: thin;
@@ -531,6 +564,22 @@ body {
 
     #modal-icon {
         width: 140px;
+    }
+
+    .hourly_time {
+        font-size: 12px;
+    }
+
+    .hourTemp, .hourPop, .hourWind {
+        font-size: 12px;
+    }
+
+    .day-box, .weather-desc, .weather-temp {
+        font-size: 12px;
+    }
+
+    #weather-icon {
+        width: 45px;
     }
 
     .temp-reg {
@@ -573,7 +622,7 @@ body {
     }
 
     .hourly-column {
-        min-width: 14%;
+        min-width:80px;
     }
 
     .tempMin {
@@ -592,11 +641,6 @@ body {
         display: flex;
     }
 
-    .left-div {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-    }
 
     .right-div {
         display: flex;
@@ -607,6 +651,7 @@ body {
     #popLink, #windLink, #tempLink {
         text-decoration: none;
         color: white;
+        font-size: 12px;
     }
 
     .nav-link:active {
@@ -623,25 +668,21 @@ body {
     }
 
     .home-current {
-        min-width: 570px;
-        max-width: 570px;
-        padding: 5px;
+        min-width: 320px;
+        max-width: 320px;
+        padding: 5px;         
     }
 
-    .home-block {
-        justify-items: left;
-        padding: 5px;
-    }
 
     .location-name {
         text-decoration: none;
         color: white;
         font-weight: bold;
-        font-size: 25px;
+        font-size: 20px;
     }
 
     .locationName {
-        width: 300px;
+        width: 260px;
     }
 
     .location-link {
@@ -655,12 +696,6 @@ body {
         border: none;
     }
 
-    .temp-div {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-    }
-
     .search-form {
         text-align: center;
     }
@@ -668,11 +703,6 @@ body {
     .icon-div {
         display: flex;
         align-items: center;
-    }
-
-    .temps-div {
-        display: flex;
-        justify-content: center;
     }
 
     .dropdown-toggle {
@@ -698,22 +728,27 @@ body {
         justify-content: flex-end;
     }
 
-
-    .big-desc {
-        color: white;
+    #location-desc {
+        font-size: 14px;
+    }
+    
+    #location-time {
+        font-size: 10px;
+        color: lightgray;
     }
 
     .big-icon {
-        width: 100px;
+        width: 80px;
     }
 
     .big-temp {
-        font-size: 40px;
+        font-size:25px;
     }
 
     .mini-temp {
         margin: 5px;
         color: white;
+        font-size: 12px;
     }
 
     .degree {
@@ -725,6 +760,7 @@ body {
   
   /* Tablet Styles */
   @media (min-width: 768px) and (max-width: 991.99px) {
+
    
   }
   
