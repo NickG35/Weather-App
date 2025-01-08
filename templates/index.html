@@ -101,15 +101,15 @@
                             </div>
                         </div>
                         <div class="temps-div">
-                            <span id="tempmax" class="mini-temp">H:${data.tempmax}</span>
-                            <span id="tempmin" class="mini-temp">L:${data.tempmin}</span>
+                            <span id="tempmax" class="mini-temp">H:${data.tempmax}°</span>
+                            <span id="tempmin" class="mini-temp">L:${data.tempmin}°</span>
                         </div>
                         <button class="deleteButton" type="button" data-bs-toggle="dropdown">
                             <i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i>
                         </button>
-                        <ul id="menuDrop" class="dropdown-menu">
-                            <li>
-                                <button id="deleteButton" class="dropdown-item delete-button" data-city="${data.city}" data-id="${data.id}">Delete</button>
+                        <ul id="menuDrop" class="dropdown-menu dropdown-menu-end">
+                            <li class="buttonLink">
+                                <button id="deleteButton" class="dropdown-item delete-button" data-city="${data.city}" data-id="${data.id}"><i class="fa-regular fa-trash-can"></i></button>
                             </li>
                         </ul>
                     </div>
@@ -169,15 +169,15 @@
                             </div>
                         </div>
                         <div class="temps-div">
-                            <span id="tempmax" class="mini-temp">H:${location.tempmax}</span>
-                            <span id="tempmin" class="mini-temp">L:${location.tempmin}</span>
+                            <span id="tempmax" class="mini-temp">H:${location.tempmax}°</span>
+                            <span id="tempmin" class="mini-temp">L:${location.tempmin}°</span>
                         </div>
                         <button class="deleteButton" type="button" data-bs-toggle="dropdown">
                             <i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i>
                         </button>
-                        <ul id="menuDrop" class="dropdown-menu">
-                            <li>
-                                <button id="deleteButton" class="dropdown-item delete-button" data-city="${location.city}" data-id="${location.id}">Delete</button>
+                        <ul id="menuDrop" class="dropdown-menu dropdown-menu-end">
+                            <li class="buttonLink">
+                                <button id="deleteButton" class="dropdown-item delete-button" data-city="${location.city}" data-id="${location.id}"><i class="fa-regular fa-trash-can"></i></button>
                             </li>
                         </ul>
                     </div>
@@ -328,16 +328,16 @@
                         </div>
                     </div>
                     <div class="temps-div">
-                        <span id="tempmax" class="mini-temp">H:{{ location.tempmax }}</span>
-                        <span id="tempmin" class="mini-temp">L:{{location.tempmin }}</span>
+                        <span id="tempmax" class="mini-temp">H:{{ location.tempmax }}°</span>
+                        <span id="tempmin" class="mini-temp">L:{{location.tempmin }}°</span>
                     </div>
                 
                         <button class="deleteButton" type="button" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i></button>
                         <ul id="menuDrop" class="dropdown-menu">
-                            <li>
-                                <button id="deleteButton" class="dropdown-item delete-button" data-city="{{location.city}}" data-id="{{location.id}}">Delete</button>
+                            <li class="buttonLink">
+                                <button id="deleteButton" class="dropdown-item delete-button" data-city="{{location.city}}" data-id="{{location.id}}"><i class="fa-regular fa-trash-can"></i></button>
                             </li>
-                        </ul>
+                        </ul>                 
                 </div>
             </div>
         </a>
