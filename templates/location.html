@@ -374,7 +374,7 @@
                 {% if hourly %}
                     {% for hour in hourly %}
                         <div class="hourly-column">
-                            <p><b>{{ hour.hourly_time }}</b></p>
+                            <p class="hourly_time"><b>{{ hour.hourly_time }}</b></p>
                             <img class="rainPic" id="weather-icon" src="/static/Images/raindrop.png" id="weather-icon">
                             <img class="weatherPic" id="weather-icon" src="https://openweathermap.org/img/wn/{{ hour.hourly_symbol }}@2x.png" alt="Weather Icon">
                             <img class="windPic" id="weather-icon" src="{{hour.wind_symbol}}">
