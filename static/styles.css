@@ -81,7 +81,6 @@ body {
 .weather-block {
     border-top: none;
     background: rgba(255, 255, 255, 0.2); /* Light faded look */
-    max-width: 60%;
     justify-self: center;
     border-bottom-left-radius: 15px; 
     border-bottom-right-radius: 15px;
@@ -141,8 +140,10 @@ body {
     width: 65px;
 }
  .modal-content{
+    background: linear-gradient(179.4deg, rgb(12, 20, 69) -16.9%, rgb(71, 30, 84) 119.9%);
     border: 1px solid;
-    max-height: 700px;
+    min-width: 700px;
+    max-width: 700px;
     overflow-y: scroll;
     scrollbar-color:gray transparent;
     scrollbar-width: thin;
@@ -156,14 +157,11 @@ body {
     max-width: 100%;
     display: flex;
     flex-wrap: wrap;
+    justify-content:center;
 }
 
 .weather-pic {
     width: 50px;
-}
-
-.weather-block {
-    width: 100%;
 }
 
 .weather-desc {
@@ -198,7 +196,7 @@ body {
 }
 
 .day-box, .weather-desc, .weather-temp {
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .hourly-block {
@@ -207,19 +205,22 @@ body {
     overflow-x: scroll;
     scrollbar-color:gray transparent;
     scrollbar-width: thin;
-    max-width: 60%;
-    min-width: 60%;
     color: white;
     justify-self: center;
     border-bottom-left-radius: 15px; 
     border-bottom-right-radius: 15px;
 }
 
+.hourly-block, .weather-block {
+    max-width: 740px;
+    min-width: 740px;
+}
+
 .top-row {
      background: rgba(255, 255, 255, 0.2); /* Light faded look */
      color: rgba(255, 255, 255, 0.2);
-     max-width: 60%;
-     min-width: 60%;
+     max-width: 740px;
+     min-width: 740px;
      justify-self: center;
      padding: 4px; 
      display: flex;
@@ -245,16 +246,16 @@ body {
 
 .modal-dialog {
     color: white;
+    justify-content: center;
 }
-.modal-content{
-    background: linear-gradient(179.4deg, rgb(12, 20, 69) -16.9%, rgb(71, 30, 84) 119.9%);
-}
+
 
 .modal-header {
     justify-content: center;
 }
 
 .modal-element {
+    flex: 1;
     border-radius: 5%;
     justify-content: center;
     text-align: center;
@@ -272,11 +273,6 @@ body {
     align-items: center;
 }
 
-.modal-elements {
-    display: flex;
-    justify-content: space-evenly;
-}
-
 .element-unit {
     font-size: 18px;
 }
@@ -292,7 +288,7 @@ body {
 .daily-description {
     background: rgba(0, 0, 0, 0.2); /* Dark faded look */
     padding: 10px 5px;
-    width: 700px;
+    width: 600px;
     border-radius: 10px;
 }
 .daily-desc{
@@ -308,7 +304,7 @@ body {
 .hourly-column {
     display: flex;
     flex-direction: column;
-    min-width: 10%;
+    min-width: 120px;
     padding: 10px;
     text-align: center;
     align-items: center;
@@ -503,6 +499,10 @@ body {
     font-size: 40px;
 }
 
+.weatherIcon {
+    margin-bottom: 10px;
+}
+
 .mini-temp {
     margin: 5px;
     color: white;
@@ -531,10 +531,6 @@ body {
         text-align: center;
     }
 
-    .weather-temp {
-        padding: 10px;
-        width: 40px;
-    }
 
     .forecast-row {
         color: white;
@@ -544,26 +540,29 @@ body {
         font-size: 12px;
     }
 
-    .day-box {
-        width: 85px;
-        padding: 10px;
-    }
-
     .hourly-block, .weather-block {
         max-width: 80%;
         min-width: 80%;
     }
 
-    .modal-content{
-        border: 1px solid;
-        max-height: 800px;
-        overflow-y: scroll;
-        scrollbar-color:gray transparent;
-        scrollbar-width: thin;
+    .modal-content{ 
+        min-width: 550px;
+        max-width: 550px;
+        max-height: 550px;
+        min-height: 550px;
     }
 
+    .modal-dialog {
+        justify-content: center;
+        max-width: 100%;
+        min-width: 100%;
+    }
     #modal-icon {
-        width: 140px;
+        width: 100px;
+    }
+
+    .modal-title {
+        font-size: 16px;
     }
 
     .hourly_time {
@@ -593,11 +592,10 @@ body {
     
 
     .modal-element {
-        max-width: 100px;
-        max-height: 100px;
+        max-width:100px;
+        max-height: 95px;
         min-width: 100px;
-        min-height: 100px;
-        margin: 10px;
+        min-height: 95px;
     }
 
     .daily-description {
@@ -605,16 +603,16 @@ body {
     }
 
     .daily-desc {
-        font-size: 14px;
+        font-size: 12px;
     }
 
     .element-title {
         margin-bottom: 0px;
-        font-size: 12px;
+        font-size: 8px;
     }
 
     .element-unit {
-        font-size: 12px;
+        font-size: 10px;
     }
 
     .daily-header {
@@ -759,7 +757,14 @@ body {
   }
   
   /* Tablet Styles */
-  @media (min-width: 768px) and (max-width: 991.99px) {
+  @media (min-width: 320px) and (max-width: 550px) {
+    .modal-content {
+        min-width: 310px;
+        max-width: 310px;
+        max-height: 310px;
+        min-height: 310px;
+    }
+
 
    
   }
