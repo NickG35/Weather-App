@@ -123,8 +123,10 @@
                     })
                 })
                 updateMessage();
+                document.querySelector('.locationError').style.display = 'none';
             } else {
                 console.log('Failed to find location: ' + data.message);
+                document.querySelector('.locationError').style.display = 'block';
             }
 
         } catch(error) {
@@ -310,6 +312,7 @@
             </ul>
         </div>
     </div>
+    <p class="locationError">Please enter a valid location</p>
     <div class="home-block">
         {% for location in locations %}
         <a href="{{ url_for('location_page', location_name=location.city) }}" class="location-link">
