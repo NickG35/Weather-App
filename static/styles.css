@@ -20,6 +20,13 @@ body {
     color: white;
 }
 
+.locationError {
+    text-align: center;
+    color: #cc0000;
+    margin: 10px;
+    display: none;
+}
+
 .locationDiv {
     visibility: hidden;
 }
