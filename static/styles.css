@@ -12,6 +12,12 @@ body {
     text-align: center;
     color: white;
     padding: 5px;
+    margin: 20px;
+}
+
+.titleLink {
+    text-decoration: none;
+    color: white;
 }
 
 .locationDiv {
@@ -442,6 +448,7 @@ body {
 .temps-div {
     display: flex;
     justify-content: center;
+    margin: 0px;
 }
 
 .temps_div {
