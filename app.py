@@ -69,12 +69,14 @@ class Hourly(db.Model):
 
 @app.route('/search_results', methods=['GET'])
 def search_results():
+    #get the query a user is typing and make it lowercase for the database to interpret it
     query = request.args.get('query', '').lower()
 
     # If query is empty, return no results
     if not query:
         return jsonify({'city_names': []})  # No cities to return
     
+    #read the json file
     try:
         file_path = os.path.join(os.path.dirname(__file__), "current.city.list.json")
         with open(file_path, "r", encoding="utf-8") as file:
@@ -90,10 +92,12 @@ def search_results():
         # Limit results to 10
         limited_cities = all_matches[:10]
 
+        #return city names using json
         return jsonify({
             'city_names': limited_cities
         })
     
+    #errors if the file isn't properly read
     except FileNotFoundError:
         return jsonify({'error': 'City list file not found'}), 404
     except Exception as e:
@@ -108,15 +112,20 @@ def get_current(location):
         'units': 'imperial'
     }
     try:
+        #get current weather data 
         response = requests.get(API_URL, params=params)
         data = response.json()
+        # set variables to pass to model fields
         if data:
+            #convert times to proper format to display on page
             formatted_time = datetime.fromtimestamp(data['dt']).strftime('%-I:%M %p')
             formatted_sunrise = datetime.fromtimestamp(data['sys']['sunrise']).strftime('%-I:%M')
             formatted_sunset = datetime.fromtimestamp(data['sys']['sunset']).strftime('%-I:%M')
+            #use get_location to get lat, lon fields for first_forecast function
             coordinates = get_location(location)
             lat, lon = coordinates
             first_day = first_forecast(location, lat, lon)
+            # use first_forecast function to get temp max and min
             forecast_temp_max = int(first_day['temp']['max'])
             forecast_temp_min = int(first_day['temp']['min'])
 
@@ -142,11 +151,13 @@ def get_current(location):
             location_obj.pressure = round(data['main']['pressure'] * 0.02953, 2)
             location_obj.submission_time = datetime.now()
 
+            # if the location doesn't exist add it to the database
             if not existing_location:
                 db.session.add(location_obj)
 
             db.session.commit()
 
+            #return values for other helper functions
             return {
                 'id': location_obj.id,
                 'city': location,
@@ -176,8 +187,11 @@ def get_current(location):
     return None
 
 def update_location(location):
+    # query all existing locations
     existing_location = Location.query.filter_by(city=location).all()
+    #initiat update_locations array 
     update_locations = []
+    #update each location individually 
     for location in existing_location:
         try:
             new_weather = get_current(location.city)
@@ -198,6 +212,7 @@ def update_location(location):
                 location.visibility = new_weather['visibility']
                 location.pressure = new_weather['pressure']
                 location.submission_time = new_weather['submission_time']
+                #append all the updated data into the update_locations array 
                 update_locations.append ({
                     'id': location.id,
                     'city': location.city,
@@ -229,6 +244,7 @@ def update_location(location):
 
 
 def update_current():
+    # same formula as update_location function
     existing_locations = Location.query.all()
     update_locations = []
     for locations in existing_locations:
@@ -283,6 +299,7 @@ def update_current():
                 
 
 def get_location(city):
+    #get lat and lon attributes to pass to functions in order to get certain data
     params = {
         'q': city,
         'appid': API_KEY,
@@ -306,7 +323,7 @@ def get_location(city):
 
     
 def get_forecast(location, lat, lon):
-        #otherwise fetch new data
+        # get forecast data
         params = {
             'lat': lat,
             'lon': lon,
@@ -352,6 +369,7 @@ def get_forecast(location, lat, lon):
             return None
 
 def first_forecast(location, lat, lon):
+    #get the first forecast to get the temp max and min for current weather data
     params = {
         'lat': lat,
         'lon': lon,
@@ -409,6 +427,7 @@ def get_hourly(location, lat, lon):
                 else:
                     wind_image = 'static/Images/north_arrow.png' # Fallback image
                 
+                # return hourly data for asynchronus purposes
                 hourly_data.append({
                     'city':location,
                     'hourly_time':str(forecast_hour),
@@ -440,7 +459,7 @@ def get_hourly(location, lat, lon):
 @app.route('/delete/<int:id>', methods=['DELETE'])
 def delete_location(id):
     try:
-        # try to do id to use the get not filter_by for tomorrow
+        # delete locations by getting that location id and let the database know as well so it doesn't display data later
         deleted_location = Location.query.get(id)
         if deleted_location:
             db.session.delete(deleted_location)
@@ -452,17 +471,20 @@ def delete_location(id):
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
-#figured out why the submissions duplicate, im making new entries for the get forecast and get weather, make a new view to just get the temp max and min.
+#
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         data = request.get_json()
+        # pass the location from the html page using javascript 
         location = data.get('location', '').strip().title()
         current_weather = get_current(location)
-
+        
+        #if no location return erro 
         if current_weather is None:
             return jsonify({'error': 'Failed to retrieve weather data.'}), 400
-               
+        
+        #if location asynchronously pass data to html page 
         return jsonify ({
                 'success': True,
                 'id': current_weather['id'],
@@ -478,7 +500,8 @@ def index():
     else:
         locations = Location.query.order_by(desc(Location.submission_time)).all()
         return render_template("index.html", locations=locations)
-    
+
+#update location page by call update_location function
 @app.route('/update/<location_name>')
 def update_locpage(location_name):
     updated_location = update_location(location_name)
@@ -488,6 +511,7 @@ def update_locpage(location_name):
         'updated_data': updated_location
     }), 200 
 
+# update current weather data 
 @app.route('/update')
 def update_page():
     updated_data = update_current()
@@ -497,9 +521,11 @@ def update_page():
         'updated_data': updated_data
     }), 200
 
+# get location data including hourly and forecast data 
 @app.route('/<location_name>')
 def location_page(location_name):
     location_data = get_location(location_name)
+    # if there is a valid location, get the hourly and forecast data as well
     if location_data:
         lat,lon = location_data
         forecast_data = get_forecast(location_name, lat, lon)
@@ -513,6 +539,7 @@ def location_page(location_name):
 
 @app.route('/api/<location_name>')
 def api_weather(location_name):
+    # asynchronously passes updated forecast and hourly data
     location_data = get_location(location_name)
     
     if location_data:
