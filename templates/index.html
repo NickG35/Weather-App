@@ -3,6 +3,7 @@
 {% block body %}
 <script>
     
+    // shows no location message
     function showMessage() {
         const noLocations = document.querySelector('.no_locations');
         if (noLocations) {
@@ -13,6 +14,7 @@
         }
     }
 
+    // hides no location message
     function hideMessage() {
         const noLocations = document.querySelector('.no_locations');
         if (noLocations) {
@@ -23,6 +25,7 @@
         }
     }
 
+    // toggles between showing and hiding message based on if locations are displayedd
     function updateMessage() {
         const locationsDiv = document.querySelectorAll('.home-current');
         if (locationsDiv.length === 0) {
@@ -32,6 +35,7 @@
         }
     }
 
+    // asynchronously deletes location data 
     async function deleteLocation(locationID) {
         try {
             const response = await fetch(`/delete/${locationID}`, {
@@ -57,6 +61,7 @@
     }
 
     async function createLocation() {
+        // pass location name to app view for function to run 
         const locationInput = document.querySelector('.locationName').value.trim();
         try {
             const response = await fetch('/', {
@@ -69,7 +74,7 @@
             
             const data = await response.json();
 
-
+            // if data is passed, create location box
             if (data.success){
                 console.log('location created');
                 let locationBox = document.getElementById(`box${data.id}`);
@@ -114,14 +119,6 @@
                         </ul>
                     </div>
                 `;
-                const deleteButtons = document.querySelectorAll('.delete-button');
-                deleteButtons.forEach(button => {
-                    button.addEventListener('click', function (event){
-                        event.preventDefault();
-                        const locationID = this.getAttribute('data-id');
-                        deleteLocation(locationID);
-                    })
-                })
                 updateMessage();
                 document.querySelector('.locationError').style.display = 'none';
             } else {
@@ -134,14 +131,17 @@
         }
     }
 
+    // update locations on the page 
     async function updateLocation(){
 
+        // if there are no location boxes, don't update the page
         locationBoxes = document.querySelectorAll('.home-current');
         if(locationBoxes.length === 0 ){
             console.log('No locations to update.');
             return;
         }
 
+        // otherwise, update existing locations on the page
         try{
             const response = await fetch('/update');
             const data = await response.json();
@@ -184,15 +184,6 @@
                         </ul>
                     </div>
                 `;
-                
-                const deleteButtons = document.querySelectorAll('.delete-button');
-                deleteButtons.forEach(button => {
-                    button.addEventListener('click', function (event){
-                        event.preventDefault();
-                        const locationID = this.getAttribute('data-id');
-                        deleteLocation(locationID);
-                    })
-                })
 
             });
             
@@ -205,30 +196,36 @@
 
         setInterval(updateLocation, 1800000);
 
-    
+    // initiate debounce timer and fetch controller for search queries
     let debounceTimer;
     let fetchController;
 
     document.addEventListener('DOMContentLoaded', function () {
-        const deleteButtons = document.querySelectorAll('.delete-button');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function (event) {
-                event.preventDefault(); // Prevent the default anchor behavior
-                const locationID = this.getAttribute('data-id');
-                deleteLocation(locationID)
+        // allow deleteLocation function for all location boxes, even when created dynamically
+        const container = document.querySelector('.home-block');
+        if (container) {
+            container.addEventListener('click', function (event) {
+                const button = event.target.closest('.delete-button');
+                if (button) {
+                    event.preventDefault(); // Prevent default action
+                    const locationID = button.getAttribute('data-id');
+                    deleteLocation(locationID);
+                }
             });
-        });
+        }
+        // autocomplete search feature
         document.querySelector('.locationName').addEventListener('input', async function(){
             const query = this.value.trim();
             const results = document.getElementById('resultsContainer');
-
+             // if a new query is being created while a previous query is being fetched, abort the previous query
             if (fetchController) {
                 fetchController.abort();
             }
-
+            // initialize fetch controller and create signal to pass to fetch 
             fetchController = new AbortController();
             const signal = fetchController.signal
 
+            // if there is no query, remove the timeout/debounce timer
             if(!query) {
                 clearTimeout(debounceTimer);
                 results.innerHTML = 'No cities to display'; // Clear previous results
@@ -241,10 +238,13 @@
             debounceTimer = setTimeout(async function(){
 
                 try {
+                    // fetch query entered but also keep track of the abort controller signal
                     const response = await fetch(`/search_results?query=${encodeURIComponent(query)}`, { signal });
                     const data = await response.json();
+                    // empty searchbar after search completed
                     results.innerHTML = '';
 
+                    // if the location is valid and there is an input, create search results
                     if(data.city_names && data.city_names.length > 0) {
                         data.city_names.forEach(city => {
                             const cityResult = document.createElement('div');
@@ -275,6 +275,7 @@
             }, 300); // Debounce delay
         });
 
+        // if the search bar is clicked on show the results container, if not, hide it.
         const searchForm = document.querySelector('.locationForm');
         const searchInput = document.querySelector('.locationName');
         const resultsContainer = document.querySelector('#resultsContainer');
@@ -286,14 +287,16 @@
                 resultsContainer.style.display = 'none';
             }, 200);
         }); 
+        // create location box when user submits search
         searchForm.addEventListener('submit', function(event){
             event.preventDefault();
             createLocation();
+            // hide results after submission
             resultsContainer.style.display = "none";
             resultsContainer.innerHTML = "No cities to display";
             searchInput.blur();
         })
-
+        // always update existing locations and make sure message is hidden/shown depending on location creation
         updateLocation();
         updateMessage();
        
