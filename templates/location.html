@@ -2,19 +2,7 @@
 
 {% block body %}
 <script>
-        async function fetchWeather(location){
-            try{
-                const response = await fetch(`api/${location}`);
-                const data = await response.json();
-                if (!response.ok) {
-                    console.error(`Error: ${response.status} ${response.statusText}`);
-                }
-                console.log('Forecast:', data.forecast, 'Hourly:', data.hourly);
-            } catch(error){
-                console.error('There was a problem fetching data:', error);
-            }
-        }
-
+    // update location when page is loaded 
         async function updateLocation(location){
             try{
                 const response = await fetch(`/update/${location}`);
@@ -30,6 +18,7 @@
                 updatedWeather.forEach(location => {
                     let wind_symbol = document.querySelector(`.wind-symbol_${location.id}`);
                     let wind_deg = location.wind_deg;
+                    // if wind deg is within a certain range, display the corresponding direction with a symbol
                     if (wind_symbol){
                         let svg = '';
                         if (wind_deg >= 0 && wind_deg <= 22.5){
@@ -174,6 +163,7 @@
 
          
     document.addEventListener("DOMContentLoaded", async function() {  
+        // page doesn't load until update location is finished
         const spinner = document.querySelector('.spinner-border');
         const locationBody = document.querySelector('.locationDiv');
         const location = document.querySelector('.big-icon').getAttribute('data-city');
@@ -182,6 +172,7 @@
             console.log('Data successfully loaded');
         } catch (error) {
             console.error('Error loading data:', error);
+        // when location updated, display location body
         } finally {
             spinner.style.display = 'none';
             locationBody.style.visibility = "visible";
@@ -196,12 +187,12 @@
                 element.style.display = 'block';
             });
         };
-
+        // only  show the data of the tab that is being clicked
         const tempTab = document.querySelector('#tempLink');
         const popTab = document.querySelector('#popLink');
         const windTab = document.querySelector('#windLink');
 
-   
+        //intially just show weather elements like temp 
         hideElements('.rainPic');
         hideElements('.windPic');
         hideElements('.hourPop');
@@ -211,6 +202,7 @@
         showElements('.weatherPic');
         showElements('.hourTemp');
 
+        // initally only the weather tab will be active
         const removeActiveClasses = () => {
             tempTab.classList.remove('active');
             popTab.classList.remove('active');
@@ -249,7 +241,6 @@
             removeActiveClasses();
             windTab.classList.add('nav-link', 'active');
         });
-        fetchWeather(location);
     });
 </script>
 <div class="spinner-container">
