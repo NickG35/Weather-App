@@ -104,7 +104,24 @@ def search_results():
         return jsonify({'error': str(e)}), 500
 
 
-
+def get_max_min(lat, lon):
+    #get the first forecast to get the temp max and min for current weather data
+    params = {
+        'lat': lat,
+        'lon': lon,
+        'units': 'imperial',
+        'exclude': 'current,minutely,hourly,alerts',
+        'appid': API_KEY
+    }
+    response = requests.get(API7_URL, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        # Return only the first day's data
+        return data['daily'][0]
+    else:
+        return None
+    
 def get_current(location):
     params = {
         'q': location,
@@ -121,11 +138,11 @@ def get_current(location):
             formatted_time = datetime.fromtimestamp(data['dt']).strftime('%-I:%M %p')
             formatted_sunrise = datetime.fromtimestamp(data['sys']['sunrise']).strftime('%-I:%M')
             formatted_sunset = datetime.fromtimestamp(data['sys']['sunset']).strftime('%-I:%M')
-            #use get_coordinates to get lat, lon fields for first_forecast function
+            #use get_coordinates to get lat, lon fields for get_max_min function
             coordinates = get_coordinates(location)
             lat, lon = coordinates
-            first_day = first_forecast(location, lat, lon)
-            # use first_forecast function to get temp max and min
+            first_day = get_max_min(lat, lon)
+            # use get_max_min function to get temp max and min
             forecast_temp_max = int(first_day['temp']['max'])
             forecast_temp_min = int(first_day['temp']['min'])
 
@@ -253,24 +270,6 @@ def get_forecast(location, lat, lon):
             print(f"Response: {response.text}")
             return None
 
-def first_forecast(location, lat, lon):
-    #get the first forecast to get the temp max and min for current weather data
-    params = {
-        'lat': lat,
-        'lon': lon,
-        'units': 'imperial',
-        'exclude': 'current,minutely,hourly,alerts',
-        'appid': API_KEY
-    }
-    response = requests.get(API7_URL, params=params)
-    
-    if response.status_code == 200:
-        data = response.json()
-        # Return only the first day's data
-        return data['daily'][0]
-    else:
-        return None
-
 def get_hourly(location, lat, lon):
         params = {
             'lat': lat,
@@ -386,19 +385,9 @@ def index():
         locations = Location.query.order_by(desc(Location.submission_time)).all()
         return render_template("index.html", locations=locations)
 
-#update location page by call update_location function
-@app.route('/update/<location_name>')
-def update_locpage(location_name):
-    updated_location = update_weather(location_name)
-    if not updated_location:
-         return jsonify({'error': 'Location was not updated.'}), 400
-    return jsonify({
-        'updated_data': updated_location
-    }), 200 
-
 # update current weather data 
 @app.route('/update')
-def update_page():
+def update_index_page():
     updated_data = update_weather()
     if not updated_data:
         return jsonify({'error': 'No locations were updated.'}), 400
@@ -422,8 +411,13 @@ def location_page(location_name):
     location = Location.query.filter_by(city=location_name).all()
     return render_template("location.html", location=location, forecast=forecast_data, hourly=hourly_data)
 
-@app.route('/api/<location_name>')
-def api_weather(location_name):
+#update location page by call update_weather function
+@app.route('/update/<location_name>')
+def update_location_page(location_name):
+    updated_location = update_weather(location_name)
+    if not updated_location:
+         return jsonify({'error': 'Location was not updated.'}), 400
+    
     # asynchronously passes updated forecast and hourly data
     location_data = get_coordinates(location_name)
     
@@ -431,10 +425,12 @@ def api_weather(location_name):
         lat, lon = location_data
         forecast_data = get_forecast(location_name, lat, lon)
         hourly_data = get_hourly(location_name, lat, lon)
-        return jsonify(forecast=forecast_data, hourly=hourly_data)
     
-    else:
-        return jsonify(error="Location not found"), 404
+    return jsonify({
+        'updated_data': updated_location,
+        'forecast':forecast_data,
+        'hourly': hourly_data
+    }), 200 
 
 if __name__ == "__main__":
     with app.app_context():
