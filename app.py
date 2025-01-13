@@ -121,8 +121,8 @@ def get_current(location):
             formatted_time = datetime.fromtimestamp(data['dt']).strftime('%-I:%M %p')
             formatted_sunrise = datetime.fromtimestamp(data['sys']['sunrise']).strftime('%-I:%M')
             formatted_sunset = datetime.fromtimestamp(data['sys']['sunset']).strftime('%-I:%M')
-            #use get_location to get lat, lon fields for first_forecast function
-            coordinates = get_location(location)
+            #use get_coordinates to get lat, lon fields for first_forecast function
+            coordinates = get_coordinates(location)
             lat, lon = coordinates
             first_day = first_forecast(location, lat, lon)
             # use first_forecast function to get temp max and min
@@ -157,27 +157,8 @@ def get_current(location):
 
             db.session.commit()
 
-            #return values for other helper functions
-            return {
-                'id': location_obj.id,
-                'city': location,
-                'time': formatted_time,
-                'icon': data['weather'][0]['icon'],
-                'weather_description': data['weather'][0]['description'],
-                'temperature': int(data['main']['temp']),
-                'tempmax': forecast_temp_max,
-                'tempmin': forecast_temp_min,
-                'sunrise' : formatted_sunrise,
-                'sunset' : formatted_sunset,
-                'wind_speed': int(data['wind']['speed']),
-                'wind_deg': int(data['wind']['deg']),
-                'rainfall': int(data.get('rain', {}).get('1h', 0)),  # Safely handle missing 'rain' key
-                'feels_like' : int(data['main']['feels_like']),
-                'humidity' : int(data['main']['humidity']),
-                'visibility' : round(data['visibility'] * 0.000621371),
-                'pressure' : round(data['main']['pressure'] * 0.02953, 2),
-                'submission_time': datetime.now()
-            }
+            #return location_obj to pass to view
+            return location_obj
      
     except requests.exceptions.RequestException as e:
         print(f"Error: Failed to retrieve weather data for {location} - {e}")
@@ -186,119 +167,23 @@ def get_current(location):
         db.session.rollback()
     return None
 
-def update_location(location):
-    # query all existing locations
-    existing_location = Location.query.filter_by(city=location).all()
-    #initiat update_locations array 
-    update_locations = []
-    #update each location individually 
-    for location in existing_location:
-        try:
-            new_weather = get_current(location.city)
-            if new_weather:
-                location.time = new_weather['time']
-                location.icon = new_weather['icon']
-                location.weather_description = new_weather['weather_description']
-                location.temperature = new_weather['temperature']
-                location.tempmax = new_weather['tempmax']
-                location.tempmin = new_weather['tempmin']
-                location.sunrise = new_weather['sunrise']
-                location.sunset = new_weather['sunset']
-                location.wind_speed = new_weather['wind_speed']
-                location.wind_deg = new_weather['wind_deg']
-                location.rainfall = new_weather['rainfall']
-                location.feels_like = new_weather['feels_like']
-                location.humidity = new_weather['humidity']
-                location.visibility = new_weather['visibility']
-                location.pressure = new_weather['pressure']
-                location.submission_time = new_weather['submission_time']
-                #append all the updated data into the update_locations array 
-                update_locations.append ({
-                    'id': location.id,
-                    'city': location.city,
-                    'time': location.time,
-                    'icon': location.icon,
-                    'weather_description': location.weather_description,
-                    'temperature': location.temperature,
-                    'tempmax': location.tempmax,
-                    'tempmin': location.tempmin,
-                    'sunrise': location.sunrise, 
-                    'sunset': location.sunset, 
-                    'wind_speed': location.wind_speed,
-                    'wind_deg': location.wind_deg, 
-                    'rainfall': location.rainfall, 
-                    'feels_like': location.feels_like,
-                    'humidity': location.humidity,
-                    'visibility': location.visibility,
-                    'pressure': location.pressure,
-                    'submission_time': location.submission_time
-                })
-        except Exception as e:
-            print(f"Error updating location {location.city}: {e}")
-    try:
-        db.session.commit()
-    except Exception as e:
-        print(f"Error committing updates to databse: {e}")
+def update_weather(city=None):
+    #Updates weather for all locations or specific city depending on if city is None or not
+    locations = (
+                Location.query.all() if city is None
+                else Location.query.filter_by(city=city).all()
+    )
+
+    updated_locations = []
+
+    for location in locations:
+        updated_location = get_current(location.city)
+        if updated_location:
+            updated_locations.append(updated_location)
     
-    return update_locations
+    return updated_locations
 
-
-def update_current():
-    # same formula as update_location function
-    existing_locations = Location.query.all()
-    update_locations = []
-    for locations in existing_locations:
-        try:
-            new_weather = get_current(locations.city)
-            if new_weather:
-                locations.time = new_weather['time']
-                locations.icon = new_weather['icon']
-                locations.weather_description = new_weather['weather_description']
-                locations.temperature = new_weather['temperature']
-                locations.tempmax = new_weather['tempmax']
-                locations.tempmin = new_weather['tempmin']
-                locations.sunrise = new_weather['sunrise']
-                locations.sunset = new_weather['sunset']
-                locations.wind_speed = new_weather['wind_speed']
-                locations.wind_deg = new_weather['wind_deg']
-                locations.rainfall = new_weather['rainfall']
-                locations.feels_like = new_weather['feels_like']
-                locations.humidity = new_weather['humidity']
-                locations.visibility = new_weather['visibility']
-                locations.pressure = new_weather['pressure']
-                locations.submission_time = new_weather['submission_time']
-                update_locations.append ({
-                    'id': locations.id,
-                    'city': locations.city,
-                    'time': locations.time,
-                    'icon': locations.icon,
-                    'weather_description': locations.weather_description,
-                    'temperature': locations.temperature,
-                    'tempmax': locations.tempmax,
-                    'tempmin': locations.tempmin,
-                    'sunrise': locations.sunrise, 
-                    'sunset': locations.sunset, 
-                    'wind_speed': locations.wind_speed,
-                    'wind_deg': locations.wind_deg, 
-                    'rainfall': locations.rainfall, 
-                    'feels_like': locations.feels_like,
-                    'humidity': locations.humidity,
-                    'visibility': locations.visibility,
-                    'pressure': locations.pressure,
-                    'submission_time': locations.submission_time
-                })
-        except Exception as e:
-            print(f"Error updating location {locations.city}: {e}")
-    try:
-        db.session.commit()
-    except Exception as e:
-        print(f"Error committing updates to databse: {e}")
-    
-    return update_locations
-
-                
-
-def get_location(city):
+def get_coordinates(city):
     #get lat and lon attributes to pass to functions in order to get certain data
     params = {
         'q': city,
@@ -504,7 +389,7 @@ def index():
 #update location page by call update_location function
 @app.route('/update/<location_name>')
 def update_locpage(location_name):
-    updated_location = update_location(location_name)
+    updated_location = update_weather(location_name)
     if not updated_location:
          return jsonify({'error': 'Location was not updated.'}), 400
     return jsonify({
@@ -514,7 +399,7 @@ def update_locpage(location_name):
 # update current weather data 
 @app.route('/update')
 def update_page():
-    updated_data = update_current()
+    updated_data = update_weather()
     if not updated_data:
         return jsonify({'error': 'No locations were updated.'}), 400
     return jsonify ({
@@ -524,7 +409,7 @@ def update_page():
 # get location data including hourly and forecast data 
 @app.route('/<location_name>')
 def location_page(location_name):
-    location_data = get_location(location_name)
+    location_data = get_coordinates(location_name)
     # if there is a valid location, get the hourly and forecast data as well
     if location_data:
         lat,lon = location_data
@@ -540,7 +425,7 @@ def location_page(location_name):
 @app.route('/api/<location_name>')
 def api_weather(location_name):
     # asynchronously passes updated forecast and hourly data
-    location_data = get_location(location_name)
+    location_data = get_coordinates(location_name)
     
     if location_data:
         lat, lon = location_data
