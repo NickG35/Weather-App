@@ -27,7 +27,7 @@ body {
     display: none;
 }
 
-.locationDiv {
+.locationDiv, .index-div {
     visibility: hidden;
 }
 
