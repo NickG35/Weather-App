@@ -44,6 +44,7 @@ class Location(db.Model):
     pressure = db.Column(db.Integer, nullable=True)
     submission_time = db.Column(db.String(50), default=datetime.now)
 
+
 class Forecast(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     city = db.Column(db.String(100), nullable=False)
@@ -196,7 +197,26 @@ def update_weather(city=None):
     for location in locations:
         updated_location = get_current(location.city)
         if updated_location:
-            updated_locations.append(updated_location)
+            updated_locations.append({
+                "id": location.id,
+                "city": location.city,
+                "temperature": updated_location.temperature,
+                "weather_description": updated_location.weather_description,
+                "time": updated_location.time,
+                "icon": updated_location.icon,
+                "tempmax": updated_location.tempmax,
+                "tempmin": updated_location.tempmin,
+                "sunrise": updated_location.sunrise,
+                "sunset": updated_location.sunset,
+                "wind_speed": updated_location.wind_speed,
+                "wind_deg": updated_location.wind_deg,
+                "rainfall": updated_location.rainfall,
+                "feels_like": updated_location.feels_like,
+                "humidity": updated_location.humidity,
+                "visibility": updated_location.visibility,
+                "pressure": updated_location.pressure,
+                "submission_time": updated_location.submission_time
+            })
     
     return updated_locations
 
@@ -371,14 +391,14 @@ def index():
         #if location asynchronously pass data to html page 
         return jsonify ({
                 'success': True,
-                'id': current_weather['id'],
-                'city': current_weather['city'],
-                'time': current_weather['time'],
-                'icon': current_weather['icon'],
-                'weather_description': current_weather['weather_description'],
-                'temperature': current_weather['temperature'],
-                'tempmax': current_weather['tempmax'],
-                'tempmin': current_weather['tempmin'],
+                'id': current_weather.id,
+                'city': current_weather.city,
+                'time': current_weather.time,
+                'icon': current_weather.icon,
+                'weather_description': current_weather.weather_description,
+                'temperature': current_weather.temperature,
+                'tempmax': current_weather.tempmax,
+                'tempmin': current_weather.tempmin
         }), 200
     
     else:
