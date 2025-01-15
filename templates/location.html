@@ -52,6 +52,7 @@
                             svg = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M440-80v-647L256-544l-56-56 280-280 280 280-56 57-184-184v647h-80Z"/></svg>';
                         }
 
+                        // update html with new data 
                         let currentBlock = document.getElementById(`block_${location.id}`);
                         if(currentBlock) {
                             currentBlock.innerHTML = `
@@ -187,60 +188,47 @@
                 element.style.display = 'block';
             });
         };
-        // only  show the data of the tab that is being clicked
+        // initialize tabs
         const tempTab = document.querySelector('#tempLink');
         const popTab = document.querySelector('#popLink');
         const windTab = document.querySelector('#windLink');
 
-        //intially just show weather elements like temp 
-        hideElements('.rainPic');
-        hideElements('.windPic');
-        hideElements('.hourPop');
-        hideElements('.hourWind');
-
-        // Show weatherPic and hourTemp initially
-        showElements('.weatherPic');
-        showElements('.hourTemp');
-
-        // initally only the weather tab will be active
-        const removeActiveClasses = () => {
-            tempTab.classList.remove('active');
-            popTab.classList.remove('active');
-            windTab.classList.remove('active');
+        // only display the weather pic and hourly temp when the page is loaded
+        const initialDisplay = () => {
+            hideElements(['.rainPic', '.windPic', '.hourPop', '.hourWind']);
+            showElements(['.weatherPic', '.hourTemp']);
         };
 
+        // remove the active class from tabs
+        const removeActiveClasses = () => {
+            [tempTab, popTab, windTab].forEach(tab => tab.classList.remove('active'));
+        };
+
+        // function helps show data based on the tab that is clicked, making the tab active and hiding irrelevant data
+        const tabHandler = (showSelectors, hideSelectors, activeTab) => {
+            showElements(showSelectors);
+            hideElements(hideSelectors);
+            removeActiveClasses();
+            activeTab.classList.add('nav-link', 'active');
+        };
+
+        // just shows temp data
         tempTab.addEventListener('click', function(){
-            showElements('.weatherPic');
-            showElements('.hourTemp');
-            hideElements('.rainPic');
-            hideElements('.hourPop');
-            hideElements('.windPic');
-            hideElements('.hourWind');
-            removeActiveClasses();
-            tempTab.classList.add('nav-link', 'active');
-
+            tabHandler(['.weatherPic', '.hourTemp'], ['.rainPic', '.hourPop', '.windPic', '.hourWind'], tempTab);
         });
+
+        // shows precipitation data
         popTab.addEventListener('click', function(){
-            showElements('.rainPic');
-            showElements('.hourPop');
-            hideElements('.weatherPic');
-            hideElements('.hourTemp');
-            hideElements('.windPic');
-            hideElements('.hourWind');
-            removeActiveClasses();
-            popTab.classList.add('nav-link', 'active');
-
+            tabHandler(['.rainPic', '.hourPop'], ['.weatherPic', '.hourTemp', '.windPic', '.hourWind'], popTab);
         });
+        
+        // shows wind data
         windTab.addEventListener('click', function(){
-            showElements('.windPic');
-            showElements('.hourWind');
-            hideElements('.rainPic');
-            hideElements('.hourPop');
-            hideElements('.weatherPic');
-            hideElements('.hourTemp');
-            removeActiveClasses();
-            windTab.classList.add('nav-link', 'active');
+           tabHandler(['.windPic', '.hourWind'], ['.rainPic', '.hourPop', '.weatherPic', '.hourTemp'], windTab);
         });
+
+        // initially displays temp
+        initialDisplay();
     });
 </script>
 <div class="spinner-container">
