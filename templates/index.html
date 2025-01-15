@@ -60,6 +60,36 @@
         }
     }
 
+    function formatBox(location) {
+        return `
+                    <div class="left-div">
+                        <span class="location-name">${location.city}</span>
+                        <span id="location-desc" class="big-desc">${location.weather_description}</span>
+                        <small id="location-time" class="big-desc">Last updated at ${location.time}</small>
+                    </div>
+                    <div class="right-div">
+                        <div class="icon-div">
+                            <img class="big-icon" src="http://openweathermap.org/img/wn/${location.icon}.png" alt="Weather Icon">  
+                            <div class="temp-div">            
+                                <p class="big-temp"><b>${location.temperature}</b></p>
+                                <p class="degree">°F</p>
+                            </div>
+                        </div>
+                        <div class="temps-div">
+                            <span id="tempmax" class="mini-temp">H:${location.tempmax}°</span>
+                            <span id="tempmin" class="mini-temp">L:${location.tempmin}°</span>
+                        </div>
+                        <button class="deleteButton" type="button" data-bs-toggle="dropdown">
+                            <i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i>
+                        </button>
+                        <ul id="menuDrop" class="dropdown-menu dropdown-menu-end">
+                            <li class="buttonLink">
+                                <button id="deleteButton" class="dropdown-item delete-button" data-city="${location.city}" data-id="${location.id}"><i class="fa-regular fa-trash-can"></i></button>
+                            </li>
+                        </ul>
+                    </div>
+                `
+    }
     async function createLocation() {
         // pass location name to app view for function to run 
         const locationInput = document.querySelector('.locationName').value.trim();
@@ -91,34 +121,7 @@
                     locationLink.prepend(locationBox);
                     document.querySelector('.home-block').prepend(locationLink);
                 }
-                locationBox.innerHTML = `
-                    <div class="left-div">
-                        <span class="location-name">${data.city}</span>
-                        <span id="location-desc" class="big-desc">${data.weather_description}</span>
-                        <small id="location-time" class="big-desc">Last updated at ${data.time}</small>
-                    </div>
-                    <div class="right-div">
-                        <div class="icon-div">
-                            <img class="big-icon" src="http://openweathermap.org/img/wn/${data.icon}.png" alt="Weather Icon">  
-                            <div class="temp-div">            
-                                <p class="big-temp"><b>${data.temperature}</b></p>
-                                <p class="degree">°F</p>
-                            </div>
-                        </div>
-                        <div class="temps-div">
-                            <span id="tempmax" class="mini-temp">H:${data.tempmax}°</span>
-                            <span id="tempmin" class="mini-temp">L:${data.tempmin}°</span>
-                        </div>
-                        <button class="deleteButton" type="button" data-bs-toggle="dropdown">
-                            <i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i>
-                        </button>
-                        <ul id="menuDrop" class="dropdown-menu dropdown-menu-end">
-                            <li class="buttonLink">
-                                <button id="deleteButton" class="dropdown-item delete-button" data-city="${data.city}" data-id="${data.id}"><i class="fa-regular fa-trash-can"></i></button>
-                            </li>
-                        </ul>
-                    </div>
-                `;
+                locationBox.innerHTML = formatBox(data);
                 updateMessage();
                 document.querySelector('.locationError').style.display = 'none';
             } else {
@@ -156,35 +159,7 @@
             let updatedWeather = data.updated_data
             updatedWeather.forEach(location => {
                 let locationBox = document.getElementById(`box${location.id}`);
-                locationBox.innerHTML = `
-                    <div class="left-div">
-                        <span class="location-name">${location.city}</span>
-                        <span id="location-desc" class="big-desc">${location.weather_description}</span>
-                        <small id="location-time" class="big-desc">Last updated at ${location.time}</small>
-                    </div>
-                    <div class="right-div">
-                        <div class="icon-div">
-                            <img class="big-icon" src="http://openweathermap.org/img/wn/${location.icon}.png" alt="Weather Icon">  
-                            <div class="temp-div">            
-                                <p class="big-temp"><b>${location.temperature}</b></p>
-                                <p class="degree">°F</p>
-                            </div>
-                        </div>
-                        <div class="temps-div">
-                            <span id="tempmax" class="mini-temp">H:${location.tempmax}°</span>
-                            <span id="tempmin" class="mini-temp">L:${location.tempmin}°</span>
-                        </div>
-                        <button class="deleteButton" type="button" data-bs-toggle="dropdown">
-                            <i class="fa-solid fa-ellipsis fa-lg" style="color: darkgray;"></i>
-                        </button>
-                        <ul id="menuDrop" class="dropdown-menu dropdown-menu-end">
-                            <li class="buttonLink">
-                                <button id="deleteButton" class="dropdown-item delete-button" data-city="${location.city}" data-id="${location.id}"><i class="fa-regular fa-trash-can"></i></button>
-                            </li>
-                        </ul>
-                    </div>
-                `;
-
+                locationBox.innerHTML = formatBox(location);
             });
             
             
@@ -200,7 +175,21 @@
     let debounceTimer;
     let fetchController;
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
+         // page doesn't load until update location is finished
+        const spinner = document.querySelector('.spinner-border');
+        const indexBody = document.querySelector('.index-div');
+        try {
+            await updateLocation();
+            console.log('Data successfully loaded');
+        } catch (error) {
+            console.error('Error loading data:', error);
+        // when location updated, display location body
+        } finally {
+            spinner.style.display = 'none';
+            indexBody.style.visibility = "visible";
+        }    
+
         // allow deleteLocation function for all location boxes, even when created dynamically
         const container = document.querySelector('.home-block');
         if (container) {
@@ -302,6 +291,12 @@
        
     });
 </script>
+<div class="spinner-container">
+    <div class="spinner-border" role="status">
+        <span class="sr-only"></span>
+    </div>
+</div>
+<div class="index-div">
     <div class="search-block">
         <div class="search-form">
             <form action="/" method="post" class="locationForm">
@@ -350,4 +345,5 @@
         {% endfor %}
         <p class="no_locations"> No locations to display</p>
     </div>
+</div>
 {% endblock %}
